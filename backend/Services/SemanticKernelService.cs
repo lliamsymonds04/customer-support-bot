@@ -1,5 +1,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SupportBot.Skills;
 
 public class GroqConfig
 {
@@ -17,7 +18,7 @@ public class SemanticKernelService : ISemanticKernelService
 {
     private readonly Kernel _kernel;
 
-    public SemanticKernelService(GroqConfig config)
+    public SemanticKernelService(GroqConfig config, IServiceProvider serviceProvider)
     {
         var builder = Kernel.CreateBuilder();
 
@@ -28,6 +29,9 @@ public class SemanticKernelService : ISemanticKernelService
         );
 
         _kernel = builder.Build();
+
+        // Add the skills
+        _kernel.Plugins.AddFromObject(serviceProvider.GetRequiredService<LogFormSkill>());
     }
 
     public async Task<string> RunPromptAsync(string prompt)

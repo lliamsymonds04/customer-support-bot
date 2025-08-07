@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SupportBot.Models;
+using SupportBot.Skills;
 using SupportBot.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,7 @@ builder.Services.AddSingleton<ISemanticKernelService>(sp =>
         ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
         Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
     };
-    return new SemanticKernelService(config);
+    return new SemanticKernelService(config, sp);
 });
 
 // Build connection string
@@ -34,6 +35,9 @@ else if (connectionString == null)
 // Add Db context
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+// Register skills
+builder.Services.AddScoped<LogFormSkill>();
 
 var app = builder.Build();
 
