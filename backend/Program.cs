@@ -3,7 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton(sp =>
+builder.Services.AddSingleton<ISemanticKernelService>(sp =>
 {
     var config = new GroqConfig
     {
@@ -22,4 +22,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+var sk = app.Services.GetRequiredService<ISemanticKernelService>();
+var result = await sk.RunPromptAsync("Tell me a nerdy programming joke.");
+Console.WriteLine(result);
+
+await app.RunAsync();

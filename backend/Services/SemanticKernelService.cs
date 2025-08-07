@@ -8,7 +8,12 @@ public class GroqConfig
     public required string Endpoint { get; set; }
 }
 
-public class SemanticKernelService
+public interface ISemanticKernelService
+{
+    Task<string> RunPromptAsync(string prompt);
+}
+
+public class SemanticKernelService : ISemanticKernelService
 {
     private readonly Kernel _kernel;
 
@@ -27,14 +32,13 @@ public class SemanticKernelService
 
     public async Task<string> RunPromptAsync(string prompt)
     {
-        var chatCompletion = _kernel.CreateFunctionFromPrompt(prompt);
-        var result = await chatCompletion.InvokeAsync();
+        var result = await _kernel.InvokePromptAsync(prompt);
 
         if (result is null)
         {
             throw new Exception("Chat completion returned null result.");
         }
-        
+
         return result.ToString()!;
     }
 
