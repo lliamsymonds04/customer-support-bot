@@ -1,13 +1,23 @@
 using Microsoft.EntityFrameworkCore;
-using SupportBot.Models;
 using SupportBot.Skills;
 using SupportBot.Data;
+using SupportBot.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
 
+// add Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+});
+
+// Add session manager
+builder.Services.AddSingleton<ISessionManager, RedisSessionManager>();
+
+// Add Semantic Kernel service
 builder.Services.AddSingleton<ISemanticKernelService>(sp =>
 {
     var config = new GroqConfig
@@ -16,7 +26,9 @@ builder.Services.AddSingleton<ISemanticKernelService>(sp =>
         ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
         Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
     };
-    return new SemanticKernelService(config, sp);
+
+    var sessionManager = sp.GetRequiredService<ISessionManager>();
+    return new SemanticKernelService(config, sp, sessionManager);
 });
 
 // Build connection string
