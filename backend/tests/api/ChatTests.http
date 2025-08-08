@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:5153/api/chat
+@Content-Type = application/json
+
+
+POST {{baseUrl}}/ask
+Content-Type: {{Content-Type}}
+
+{
+  "prompt": "What is the capital of France?",
+  "sessionId": "test-session-123"
+}

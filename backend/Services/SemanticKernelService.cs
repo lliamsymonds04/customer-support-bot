@@ -14,6 +14,8 @@ public class GroqConfig
 public interface ISemanticKernelService
 {
     Task<string> RunPromptAsync(string prompt);
+    Task<string> ChatWithAgentAsync(string message, string sessionId);
+    Task ClearSessionAsync(string sessionId);
 }
 
 public class SemanticKernelService : ISemanticKernelService
@@ -22,7 +24,7 @@ public class SemanticKernelService : ISemanticKernelService
     private readonly ChatCompletionAgent _agent;
     private readonly ISessionManager _sessionManager;
 
-    public SemanticKernelService(GroqConfig config, IServiceProvider serviceProvider, ISessionManager sessionManager)
+    public SemanticKernelService(GroqConfig config, LogFormSkill skill, ISessionManager sessionManager)
     {
         var builder = Kernel.CreateBuilder();
 
@@ -35,8 +37,7 @@ public class SemanticKernelService : ISemanticKernelService
         _kernel = builder.Build();
 
         // Add the skills
-        _kernel.Plugins.AddFromObject(serviceProvider.GetRequiredService<LogFormSkill>());
-        _sessionManager = serviceProvider.GetRequiredService<ISessionManager>();
+        _kernel.Plugins.AddFromObject(skill);
 
         _agent = new ChatCompletionAgent()
         {
@@ -52,6 +53,7 @@ public class SemanticKernelService : ISemanticKernelService
             Kernel = _kernel,
             Name = "SupportAgent"
         };
+        _sessionManager = sessionManager;
     }
 
     public async Task<string> RunPromptAsync(string prompt)

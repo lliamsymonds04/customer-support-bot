@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
 // add Redis
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -14,22 +15,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 });
 
-// Add session manager
-builder.Services.AddSingleton<ISessionManager, RedisSessionManager>();
 
-// Add Semantic Kernel service
-builder.Services.AddSingleton<ISemanticKernelService>(sp =>
-{
-    var config = new GroqConfig
-    {
-        ApiKey = builder.Configuration["Groq:ApiKey"] ?? throw new ArgumentNullException("Groq:ApiKey"),
-        ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
-        Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
-    };
-
-    var sessionManager = sp.GetRequiredService<ISessionManager>();
-    return new SemanticKernelService(config, sp, sessionManager);
-});
 
 // Build connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -51,6 +37,48 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register skills
 builder.Services.AddScoped<LogFormSkill>();
 
+// Add session manager
+builder.Services.AddSingleton<ISessionManager, RedisSessionManager>();
+
+// Skills
+builder.Services.AddScoped<LogFormSkill>();
+
+// Configure Groq API
+builder.Services.AddSingleton<GroqConfig>(sp =>
+{
+    return new GroqConfig
+    {
+        ApiKey = builder.Configuration["Groq:ApiKey"] ?? throw new ArgumentNullException("Groq:ApiKey"),
+        ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
+        Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
+    };
+});
+
+// Add Semantic Kernel service
+builder.Services.AddScoped<ISemanticKernelService, SemanticKernelService>();
+// builder.Services.AddSingleton<ISemanticKernelService>(sp =>
+// {
+//     var config = new GroqConfig
+//     {
+//         ApiKey = builder.Configuration["Groq:ApiKey"] ?? throw new ArgumentNullException("Groq:ApiKey"),
+//         ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
+//         Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
+//     };
+
+//     var sessionManager = sp.GetRequiredService<ISessionManager>();
+//     var logFormSkill = sp.GetRequiredService<LogFormSkill>();
+//     return new SemanticKernelService(config, logFormSkill, sessionManager);
+// });
+
+// Add Cors Policy
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontEnd",
+        builder => builder.WithOrigins(allowedOrigins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,8 +87,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-var sk = app.Services.GetRequiredService<ISemanticKernelService>();
-var result = await sk.RunPromptAsync("Tell me a nerdy programming joke.");
-Console.WriteLine(result);
 
-await app.RunAsync();
+app.MapControllers();
+app.Run();
