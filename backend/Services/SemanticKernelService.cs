@@ -1,5 +1,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using SupportBot.Skills;
 using SupportBot.Services;
 
@@ -21,7 +22,7 @@ public class SemanticKernelService : ISemanticKernelService
     private readonly ChatCompletionAgent _agent;
     private readonly ISessionManager _sessionManager;
 
-    public SemanticKernelService(GroqConfig config, IServiceProvider serviceProvider, ISessionManager sessionManager )
+    public SemanticKernelService(GroqConfig config, IServiceProvider serviceProvider, ISessionManager sessionManager)
     {
         var builder = Kernel.CreateBuilder();
 
@@ -65,4 +66,51 @@ public class SemanticKernelService : ISemanticKernelService
         return result.ToString()!;
     }
 
+    public async Task<string> ChatWithAgentAsync(string message, string sessionId)
+    {
+        var session = await _sessionManager.GetOrCreateSessionAsync(sessionId);
+        session.ChatHistory.AddUserMessage(message);
+
+        var allResponses = new List<string>();
+
+        await foreach (var item in _agent.InvokeAsync(session.ChatHistory))
+        {
+            if (item.Message is ChatMessageContent chatContent)
+            {
+                if (item.Message.Role == AuthorRole.Assistant)
+                {
+                    allResponses.Add(chatContent.Content ?? string.Empty);
+                    session.ChatHistory.AddAssistantMessage(chatContent.Content ?? string.Empty);
+                }
+                else if (item.Message.Role == AuthorRole.User)
+                {
+                    session.ChatHistory.AddUserMessage(chatContent.Content ?? string.Empty);
+                }
+                else if (item.Message.Role == AuthorRole.Tool)
+                {
+                    // Handle tool responses (e.g., LogForm)
+                    if (chatContent.Content != null)
+                    {
+                        allResponses.Add($"Tool response: {chatContent.Content}");
+                        session.ChatHistory.AddAssistantMessage(chatContent.Content);
+                    }
+                }
+            }
+            
+        }
+
+        if (allResponses.Count == 0)
+        {
+            throw new Exception("Chat agent returned no assistant response.");
+        }
+
+        await _sessionManager.UpdateSessionAsync(session);
+
+        return string.Join("\n", allResponses);
+    }
+
+    public async Task ClearSessionAsync(string sessionId)
+    {
+        await _sessionManager.RemoveSessionAsync(sessionId);
+    }
 }
