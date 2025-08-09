@@ -3,9 +3,11 @@ import { Bot, Sparkles } from 'lucide-react'
 import { Input } from '@components/ui/input';
 import { useChat } from '~/hooks/use-chat';
 import { Button } from '@components/ui/button';
+import { useError } from '~/hooks/user-error';
 
 export function Home() {
-  const { messages, input, handleInputChange } = useChat();
+  const { error, setErrorMessage } = useError(3000);
+  const { messages, input, handleInputChange } = useChat(setErrorMessage);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -38,6 +40,11 @@ export function Home() {
             </CardHeader>
 
             <CardContent>
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+                  Error: {error}
+                </div>
+              )}
               <p className="text-gray-600">Start a conversation with our AI assistant.</p>
 
               <form className='mt-4 flex space-x-2'>

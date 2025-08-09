@@ -27,4 +27,16 @@ public class SessionController : ControllerBase
         }
         return Ok(session);
     }
+
+    [HttpGet("{sessionId}")]
+    public async Task<IActionResult> GetSessionById(string sessionId)
+    {
+        var exists = await _sessionManager.SessionExistsAsync(sessionId);
+
+        if (!exists)
+        {
+            return NotFound();
+        }
+        return Ok();
+    }
 }
