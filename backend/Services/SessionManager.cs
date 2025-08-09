@@ -82,23 +82,6 @@ public class RedisSessionManager : ISessionManager
         await _cache.SetStringAsync($"session:{session.Id}", sessionJson, options);
     }
 
-    // public async Task AddChatHistoryToChatMessagesAsync(string sessionId, ChatHistory newMessages)
-    // {
-    //     var session = await GetOrCreateSessionAsync(sessionId);
-
-    //     // Append each new message into the session's ChatHistory
-    //     foreach (var message in newMessages)
-    //     {
-    //         if (message.Role == AuthorRole.User)
-    //             session.ChatHistory.AddUserMessage(message.Content ?? string.Empty);
-    //         else if (message.Role == AuthorRole.Assistant)
-    //             session.ChatHistory.AddAssistantMessage(message.Content ?? string.Empty);
-    //     }
-
-    //     // Save updated session to Redis
-    //     await UpdateSessionAsync(session);
-    // }
-
     public async Task RemoveSessionAsync(string sessionId)
     {
         await _cache.RemoveAsync($"session:{sessionId}");
