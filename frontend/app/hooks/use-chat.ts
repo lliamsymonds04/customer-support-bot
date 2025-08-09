@@ -2,8 +2,14 @@ import { useState, useCallback } from 'react';
 import { useSessionId } from './use-session-id';
 import type { setErrorMessage } from './user-error';
 
+export type Message = {
+    id: string;
+    text: string;
+    role: 'user' | 'bot';
+};
+
 export function useChat(setErrorMessage: setErrorMessage) {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const sessionId = useSessionId(setErrorMessage);
@@ -18,6 +24,16 @@ export function useChat(setErrorMessage: setErrorMessage) {
         if (e) e.preventDefault();
         if (!input) return;
         setIsProcessing(true);
+
+        // add the user input to messages array
+        const userMessage: Message = {
+            id: Date.now().toString(),
+            text: input,
+            role: 'user',
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+
         try {
             const response = await fetch(`${baseUrl}/chat`, {
                 method: "POST",
