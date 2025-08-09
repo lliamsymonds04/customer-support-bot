@@ -6,25 +6,28 @@ export function useSessionId(setErrorMessage: setErrorMessage) {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const isChecking = useRef(false);
 
-    // const baseUrl = process.env.VITE_API_URL;
-    const baseUrl = import.meta.env.VITE_API_URL;
 
-    async function checkSessionId(sessionId: string) {
-        try {
-            const response = await fetch(`${baseUrl}/session/${sessionId}`, {
-                method: "GET",
-            });
-
-            return response.ok;
-        } catch (error) {
-            setErrorMessage("Failed to check session ID");
-        }
-
-        return false;
-    }
+    
 
     useEffect(() => {
+        const baseUrl = import.meta.env.VITE_API_URL;
+
+        async function checkSessionId(sessionId: string) {
+            try {
+                const response = await fetch(`${baseUrl}/session/${sessionId}`, {
+                    method: "GET",
+                });
+
+                return response.ok;
+            } catch (error) {
+                setErrorMessage("Failed to check session ID");
+            }
+
+            return false;
+        }
+
         console.log("getting session")
+
         async function checkAndSetSession() {
             if (isChecking.current) return; // Prevent multiple checks
             isChecking.current = true;
