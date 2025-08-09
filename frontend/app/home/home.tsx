@@ -54,13 +54,25 @@ export function Home() {
                   {messages.length === 0 && (
                     <div className="text-center py-8">
                       <Bot className='h-12 w-12 text-gray-400 mx-auto mb-4' />
-                      <p className="text-gray-600 mb-2">Hi! I'm your AI form builder assistant.</p>
-                      <p className="text-sm text-gray-500">Tell me what kind of form you'd like to create!</p>
+                      <p className="text-gray-600 mb-2">Hi! I'm an AI assistant here to help.</p>
+                      <p className="text-sm text-gray-500">Tell me what problem you're facing.</p>
                       <div className="mt-4 space-y-2">
-                        <Badge variant="outline" className="mr-2">Contact Form</Badge>
-                        <Badge variant="outline" className="mr-2">Survey</Badge>
-                        <Badge variant="outline" className="mr-2">Registration</Badge>
+                        <Badge variant="outline" className="mr-2">Issues</Badge>
+                        <Badge variant="outline" className="mr-2">Bugs</Badge>
                         <Badge variant="outline">Feedback</Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {isProcessing && (
+                    <div className="flex justify-start">
+                      <div className="flex items-center space-x-2">
+                        <div className="p-2 rounded-full bg-gray-200">
+                          <Bot className="h-4 w-4 text-gray-600" />
+                        </div>
+                        <div className="p-2 rounded-lg bg-gray-100">
+                          <BeatLoader size={8} color="blue" />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -77,12 +89,12 @@ export function Home() {
                   onChange={handleInputChange}
                 />
 
-                {isProcessing ? <BeatLoader color='blue'/> : <Button
+                <Button
                   type="submit"
-                  className={`px-4 ${input.length === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'}`}
+                  className={`px-4 ${input.length === 0 || isProcessing ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'}`}
                 >
                   Send
-                </Button>}
+                </Button>
               </form>
             </CardContent>
 
