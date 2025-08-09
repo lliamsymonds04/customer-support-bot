@@ -5,6 +5,8 @@ import { useChat } from '~/hooks/use-chat';
 import { Button } from '@components/ui/button';
 import { useError } from '~/hooks/user-error';
 import BeatLoader  from 'react-spinners/BeatLoader';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { Badge } from '@components/ui/badge';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
@@ -46,7 +48,25 @@ export function Home() {
                   Error: {error}
                 </div>
               )}
-              <p className="text-gray-600">Start a conversation with our AI assistant.</p>
+
+              <ScrollArea className='flex-1 pr-4'>
+                <div className='space-y-4'>
+                  {messages.length === 0 && (
+                    <div className="text-center py-8">
+                      <Bot className='h-12 w-12 text-gray-400 mx-auto mb-4' />
+                      <p className="text-gray-600 mb-2">Hi! I'm your AI form builder assistant.</p>
+                      <p className="text-sm text-gray-500">Tell me what kind of form you'd like to create!</p>
+                      <div className="mt-4 space-y-2">
+                        <Badge variant="outline" className="mr-2">Contact Form</Badge>
+                        <Badge variant="outline" className="mr-2">Survey</Badge>
+                        <Badge variant="outline" className="mr-2">Registration</Badge>
+                        <Badge variant="outline">Feedback</Badge>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </ScrollArea>
 
               <form className='mt-4 flex space-x-2 items-center' onSubmit={handleSubmit}>
                 <Input
