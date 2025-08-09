@@ -1,7 +1,12 @@
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles } from 'lucide-react'
+import { Input } from '@components/ui/input';
+import { useChat } from '~/hooks/use-chat';
+import { Button } from '@components/ui/button';
 
-export function Welcome() {
+export function Home() {
+  const { messages, input, handleInputChange } = useChat();
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -34,6 +39,24 @@ export function Welcome() {
 
             <CardContent>
               <p className="text-gray-600">Start a conversation with our AI assistant.</p>
+
+              <form className='mt-4 flex space-x-2'>
+                <Input
+                  type='text'
+                  placeholder='Type your message here...'
+                  className='flex-1'
+                  value={input}
+                  onChange={handleInputChange}
+                />
+
+                <Button
+                  type="submit"
+                  className={`px-4 ${input.length === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'}`}
+                  disabled={input.length === 0}
+                >
+                  Send
+                </Button>
+              </form>
             </CardContent>
 
           </Card>
