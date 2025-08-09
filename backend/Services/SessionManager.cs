@@ -6,6 +6,7 @@ namespace SupportBot.Services;
 
 public interface ISessionManager
 {
+    string GenerateSessionId();
     Task<UserSession> GetOrCreateSessionAsync(string sessionId);
     Task UpdateSessionAsync(UserSession session);
     Task RemoveSessionAsync(string sessionId);
@@ -24,10 +25,15 @@ public class RedisSessionManager : ISessionManager
             configuration.GetValue<int>("SessionTimeoutMinutes", 120));
     }
 
+    public string GenerateSessionId()
+    {
+        return Guid.NewGuid().ToString();
+    }
+
     public async Task<UserSession> GetOrCreateSessionAsync(string sessionId)
     {
         var sessionJson = await _cache.GetStringAsync($"session:{sessionId}");
-        
+
         if (sessionJson != null)
         {
             var existingSession = JsonSerializer.Deserialize<UserSessionData>(sessionJson);
@@ -76,22 +82,22 @@ public class RedisSessionManager : ISessionManager
         await _cache.SetStringAsync($"session:{session.Id}", sessionJson, options);
     }
 
-    public async Task AddChatHistoryToChatMessagesAsync(string sessionId, ChatHistory newMessages)
-    {
-        var session = await GetOrCreateSessionAsync(sessionId);
+    // public async Task AddChatHistoryToChatMessagesAsync(string sessionId, ChatHistory newMessages)
+    // {
+    //     var session = await GetOrCreateSessionAsync(sessionId);
 
-        // Append each new message into the session's ChatHistory
-        foreach (var message in newMessages)
-        {
-            if (message.Role == AuthorRole.User)
-                session.ChatHistory.AddUserMessage(message.Content ?? string.Empty);
-            else if (message.Role == AuthorRole.Assistant)
-                session.ChatHistory.AddAssistantMessage(message.Content ?? string.Empty);
-        }
+    //     // Append each new message into the session's ChatHistory
+    //     foreach (var message in newMessages)
+    //     {
+    //         if (message.Role == AuthorRole.User)
+    //             session.ChatHistory.AddUserMessage(message.Content ?? string.Empty);
+    //         else if (message.Role == AuthorRole.Assistant)
+    //             session.ChatHistory.AddAssistantMessage(message.Content ?? string.Empty);
+    //     }
 
-        // Save updated session to Redis
-        await UpdateSessionAsync(session);
-    }
+    //     // Save updated session to Redis
+    //     await UpdateSessionAsync(session);
+    // }
 
     public async Task RemoveSessionAsync(string sessionId)
     {
