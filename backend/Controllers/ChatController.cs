@@ -22,7 +22,7 @@ public class ChatController : ControllerBase
         _sessionManager = sessionManager;
     }
 
-    [HttpPost("ask")]
+    [HttpPost]
     public async Task<IActionResult> Ask([FromBody] ChatRequest request)
     {
         var response = await _semanticKernelService.ChatWithAgentAsync(request.Prompt, request.SessionId);

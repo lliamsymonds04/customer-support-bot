@@ -4,10 +4,11 @@ import { Input } from '@components/ui/input';
 import { useChat } from '~/hooks/use-chat';
 import { Button } from '@components/ui/button';
 import { useError } from '~/hooks/user-error';
+import BeatLoader  from 'react-spinners/BeatLoader';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
-  const { messages, input, handleInputChange } = useChat(setErrorMessage);
+  const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -47,7 +48,7 @@ export function Home() {
               )}
               <p className="text-gray-600">Start a conversation with our AI assistant.</p>
 
-              <form className='mt-4 flex space-x-2'>
+              <form className='mt-4 flex space-x-2' onSubmit={handleSubmit}>
                 <Input
                   type='text'
                   placeholder='Type your message here...'
@@ -56,13 +57,13 @@ export function Home() {
                   onChange={handleInputChange}
                 />
 
-                <Button
+                {isProcessing ? <BeatLoader /> : <Button
                   type="submit"
                   className={`px-4 ${input.length === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'}`}
                   disabled={input.length === 0}
                 >
                   Send
-                </Button>
+                </Button>}
               </form>
             </CardContent>
 
