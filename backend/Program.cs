@@ -56,30 +56,22 @@ builder.Services.AddSingleton<GroqConfig>(sp =>
 
 // Add Semantic Kernel service
 builder.Services.AddScoped<ISemanticKernelService, SemanticKernelService>();
-// builder.Services.AddSingleton<ISemanticKernelService>(sp =>
-// {
-//     var config = new GroqConfig
-//     {
-//         ApiKey = builder.Configuration["Groq:ApiKey"] ?? throw new ArgumentNullException("Groq:ApiKey"),
-//         ModelName = builder.Configuration["Groq:ModelName"] ?? throw new ArgumentNullException("Groq:ModelName"),
-//         Endpoint = builder.Configuration["Groq:Endpoint"] ?? throw new ArgumentNullException("Groq:Endpoint")
-//     };
-
-//     var sessionManager = sp.GetRequiredService<ISessionManager>();
-//     var logFormSkill = sp.GetRequiredService<LogFormSkill>();
-//     return new SemanticKernelService(config, logFormSkill, sessionManager);
-// });
 
 // Add Cors Policy
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+Console.WriteLine($"Allowed Origins: {string.Join(", ", allowedOrigins)}");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",
         builder => builder.WithOrigins(allowedOrigins)
                           .AllowAnyMethod()
-                          .AllowAnyHeader());
+                          .AllowAnyHeader()
+                          .AllowCredentials());
 });
 var app = builder.Build();
+
+// Cors
+app.UseCors("AllowFrontEnd");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
