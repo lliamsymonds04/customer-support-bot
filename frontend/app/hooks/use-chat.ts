@@ -51,7 +51,13 @@ export function useChat(setErrorMessage: setErrorMessage) {
             }
 
             const data = await response.text();
-            console.log(data)
+
+            const botResponse: Message = {
+                id: Date.now().toString(),
+                text: data,
+                role: 'bot',
+            };
+            setMessages((prev) => [...prev, botResponse]);
 
         } catch (error) {
             setErrorMessage("Failed to send message");
