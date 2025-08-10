@@ -25,7 +25,7 @@ public class SessionController : ControllerBase
         {
             return NotFound();
         }
-        return Ok(session);
+        return Ok(session.Id);
     }
 
     [HttpGet("{sessionId}")]

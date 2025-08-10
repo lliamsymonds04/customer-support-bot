@@ -6,9 +6,6 @@ export function useSessionId(setErrorMessage: setErrorMessage) {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const isChecking = useRef(false);
 
-
-    
-
     useEffect(() => {
         const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -25,8 +22,6 @@ export function useSessionId(setErrorMessage: setErrorMessage) {
 
             return false;
         }
-
-        console.log("getting session")
 
         async function checkAndSetSession() {
             if (isChecking.current) return; // Prevent multiple checks
