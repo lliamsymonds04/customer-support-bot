@@ -5,7 +5,8 @@ public enum FormCategory
     General,
     Technical,
     Billing,
-    Feedback
+    Feedback,
+    Account,
 }
 
 public enum FormUrgency
