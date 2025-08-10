@@ -35,6 +35,7 @@ export function useChat(setErrorMessage: setErrorMessage) {
         setMessages((prev) => [...prev, userMessage]);
 
         try {
+            console.log(sessionId)
             const response = await fetch(`${baseUrl}/chat`, {
                 method: "POST",
                 headers: {

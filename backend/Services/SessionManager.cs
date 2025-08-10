@@ -37,6 +37,7 @@ public class RedisSessionManager : ISessionManager
         if (sessionJson != null)
         {
             var existingSession = JsonSerializer.Deserialize<UserSessionData>(sessionJson);
+            
             if (existingSession != null)
             {
                 return new UserSession
@@ -107,10 +108,12 @@ public class RedisSessionManager : ISessionManager
         var chatHistory = new ChatHistory();
         foreach (var message in messages)
         {
-            if (message.Role == "User")
+            if (message.Role == "user")
                 chatHistory.AddUserMessage(message.Content);
-            else if (message.Role == "Assistant")
+            else if (message.Role == "assistant")
                 chatHistory.AddAssistantMessage(message.Content);
+            else
+                chatHistory.AddSystemMessage(message.Content);
         }
         return chatHistory;
     }
