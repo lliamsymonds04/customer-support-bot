@@ -40,6 +40,9 @@ builder.Services.AddScoped<LogFormSkill>();
 // Add session manager
 builder.Services.AddSingleton<ISessionManager, RedisSessionManager>();
 
+// Add form service
+builder.Services.AddScoped<IFormService, FormService>();
+
 // Skills
 builder.Services.AddScoped<LogFormSkill>();
 
