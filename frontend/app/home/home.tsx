@@ -1,19 +1,21 @@
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles, User} from 'lucide-react'
 import { Input } from '@components/ui/input';
-import { useChat } from '~/hooks/use-chat';
 import { Button } from '@components/ui/button';
-import { useError } from '~/hooks/user-error';
-import BeatLoader  from 'react-spinners/BeatLoader';
-// import { ScrollArea } from '@radix-ui/react-scroll-area';
 import {ScrollArea} from '@components/ui/scroll-area';
 import { Badge } from '@components/ui/badge';
-// import ReactMarkdown from 'react-markdown';
 import Markdown from 'react-markdown';
+import BeatLoader  from 'react-spinners/BeatLoader';
+
+//hooks
+import { useChat } from '~/hooks/use-chat';
+import { useError } from '~/hooks/user-error';
+import { useForms } from '~/hooks/use-forms';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
   const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage);
+  const { forms } = useForms();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -125,7 +127,25 @@ export function Home() {
           </Card>
 
           <Card className="h-[600px] flex flex-col">
+            <CardHeader>
+              Generated Forms
+            </CardHeader>
             <CardContent>
+              <ScrollArea className="h-[500px]">
+                {forms.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+                      <Sparkles className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-600 mb-2">No forms created yet</p>
+                    <p className="text-sm text-gray-500">Start chatting to create your first form!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    
+                  </div>
+                )}
+              </ScrollArea>
             </CardContent>
           </Card>
 

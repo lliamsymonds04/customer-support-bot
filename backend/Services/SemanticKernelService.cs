@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SupportBot.Skills;
 using SupportBot.Services;
 using SupportBot.Models;
@@ -44,7 +45,12 @@ public class SemanticKernelService : ISemanticKernelService
         {
             Instructions = GetInstructions(),
             Kernel = _kernel,
-            Name = "SupportAgent"
+            Name = "SupportAgent",
+            Arguments = new KernelArguments(
+                new OpenAIPromptExecutionSettings()
+                {
+                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                })
         };
         _sessionManager = sessionManager;
     }

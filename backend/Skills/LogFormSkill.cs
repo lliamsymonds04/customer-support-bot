@@ -14,7 +14,8 @@ public class LogFormSkill
         _dbContext = dbContext;
     }
 
-    [KernelFunction, Description("Log a form submission with category, urgency, and description.")]
+    [KernelFunction("LogForm")]
+    [Description("Log a form submission with title, category, urgency, and description.")]
     public async Task<string> LogForm (
         [Description("The title of the form submission.")] string title,
         [Description("The description of the form submission.")] string description,
@@ -33,8 +34,11 @@ public class LogFormSkill
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
+            Console.WriteLine($"Form logged: {form.Id}, Title: {form.Title}, Category: {form.category}, Urgency: {form.urgency}");
+
             _dbContext.Forms.Add(form);
             await _dbContext.SaveChangesAsync();
+
             return "Form submitted successfully.";
         }
         catch (Exception ex)
