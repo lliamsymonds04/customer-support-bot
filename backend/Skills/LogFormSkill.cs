@@ -27,14 +27,11 @@ public class LogFormSkill
         {
             var form = new Form
             {
-                Title = title,
                 Description = description,
                 category = category,
                 urgency = urgency,
                 CreatedAt = DateTimeOffset.UtcNow
             };
-
-            Console.WriteLine($"Form logged: {form.Id}, Title: {form.Title}, Category: {form.category}, Urgency: {form.urgency}");
 
             _dbContext.Forms.Add(form);
             await _dbContext.SaveChangesAsync();
