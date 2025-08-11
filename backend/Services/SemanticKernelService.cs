@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SupportBot.Skills;
 using SupportBot.Services;
+using SupportBot.Models;
 
 public class GroqConfig
 {
@@ -41,19 +42,39 @@ public class SemanticKernelService : ISemanticKernelService
 
         _agent = new ChatCompletionAgent()
         {
-            Instructions = """
-                You are a helpful customer support assistant. Your role is to:
-                
-                1. Help customers with their questions and issues
-                2. When customers want to submit a support request, use the LogForm function to create a ticket
-                3. Classify issues into appropriate categories (Technical, Billing, General, Account)
-                4. Assess urgency levels (Low, Medium, High, Critical)
-                5. Be friendly, professional, and helpful
-                """,
+            Instructions = GetInstructions(),
             Kernel = _kernel,
             Name = "SupportAgent"
         };
         _sessionManager = sessionManager;
+    }
+
+    private string GetInstructions()
+    {
+        var instructions = """
+            You are a helpful customer support assistant. Your role is to:
+            
+            1. Help customers with their questions and issues
+            2. When customers have an issue, use the LogForm function to create a ticket
+            3. Classify issues into appropriate categories 
+            4. Assess urgency levels 
+            5. Be friendly, professional, and helpful
+            6. If the customer asks a question which is not relevant to your role, don't respond and tell them your role.
+            """;
+
+        //join the relevant enums onto the instructions
+        foreach (var category in Enum.GetValues(typeof(FormCategory)))
+        {
+            instructions += $"\n- Category values: {category}";
+        }
+
+        foreach (var urgency in Enum.GetValues(typeof(FormUrgency)))
+        {
+            instructions += $"\n- Urgency values: {urgency}";
+        }
+
+        return instructions;
+
     }
 
     public async Task<string> RunPromptAsync(string prompt)
