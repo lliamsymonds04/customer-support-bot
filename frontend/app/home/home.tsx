@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles, User} from 'lucide-react'
 import { Input } from '@components/ui/input';
@@ -17,6 +18,27 @@ export function Home() {
   const { error, setErrorMessage } = useError(3000);
   const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage);
   const { forms } = useForms();
+
+  //ref for scroll
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+
+  // Auto-scroll to bottom when messages change or when processing
+  useEffect(() => {
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        })
+      }
+    }
+
+    // Small delay to ensure DOM is updated
+    const timeoutId = setTimeout(scrollToBottom, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [messages, isProcessing])
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -104,6 +126,9 @@ export function Home() {
                       </div>
                     )}
                   </div>
+
+                  {/* Invisible element to scroll to */}
+                  <div ref={messagesEndRef} className="h-1" />
                 </ScrollArea>
               </div>
 
