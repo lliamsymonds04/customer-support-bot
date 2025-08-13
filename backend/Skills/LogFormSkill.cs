@@ -40,8 +40,8 @@ public class LogFormSkill
             Console.WriteLine($"Logging form for session {sessionId}: {description}, Category: {category}, Urgency: {urgency}");
             await _formsService.SaveFormAsync(form, sessionId);
 
-            // await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
-            await _formsHub.Clients.All.SendAsync("ReceiveUserForm", form);
+            await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
+            // await _formsHub.Clients.All.SendAsync("ReceiveUserForm", form);
 
             return "Form submitted successfully.";
         }

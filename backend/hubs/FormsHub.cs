@@ -12,31 +12,21 @@ public class FormsHub : Hub
         var sessionId = Context.GetHttpContext()?.Request.Query["sessionId"].ToString();
         if (!string.IsNullOrEmpty(sessionId))
         {
-            _userConnections[sessionId] = Context.ConnectionId;
+            await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
+            // _userConnections[sessionId] = Context.ConnectionId;
         }
         await base.OnConnectedAsync();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        lock (_userConnections)
+        var sessionId = Context.GetHttpContext()?.Request.Query["sessionId"].ToString();
+        if (!string.IsNullOrWhiteSpace(sessionId))
         {
-            var item = _userConnections.FirstOrDefault(x => x.Value == Context.ConnectionId);
-            if (!string.IsNullOrEmpty(item.Key))
-            {
-                _userConnections.Remove(item.Key);
-            }
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
+            Console.WriteLine($"[FormsHub] Removed {Context.ConnectionId} from group {sessionId}");
         }
 
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
-
-    // public Task SendFormToUser(string sessionId, Form formData)
-    // {
-    //     if (_userConnections.TryGetValue(sessionId, out var connectionId))
-    //     {
-    //         return Clients.Client(connectionId).SendAsync("ReceiveUserForm", formData);
-    //     }
-    //     return Task.CompletedTask;
-    // }
 }
