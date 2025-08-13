@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useSessionId } from './use-session-id';
 import type { setErrorMessage } from './user-error';
 
 export type Message = {
@@ -8,11 +7,10 @@ export type Message = {
     role: 'user' | 'bot';
 };
 
-export function useChat(setErrorMessage: setErrorMessage) {
+export function useChat(setErrorMessage: setErrorMessage, sessionId: string | null) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
-    const sessionId = useSessionId(setErrorMessage);
     const baseUrl = import.meta.env.VITE_API_URL;
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +20,7 @@ export function useChat(setErrorMessage: setErrorMessage) {
 
     async function handleSubmit(e?: React.FormEvent) {
         if (e) e.preventDefault();
-        if (!input) return;
+        if (!input || !sessionId) return;
         setIsProcessing(true);
 
         // add the user input to messages array
@@ -35,7 +33,6 @@ export function useChat(setErrorMessage: setErrorMessage) {
         setMessages((prev) => [...prev, userMessage]);
 
         try {
-            console.log(sessionId)
             const response = await fetch(`${baseUrl}/chat`, {
                 method: "POST",
                 headers: {

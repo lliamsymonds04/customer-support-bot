@@ -29,14 +29,12 @@ export interface Form
     createdAt: Date;
 }
 
-export function useForms() {
+export function useForms(sessionId: string | null) {
     const [forms, setForms] = useState<Form[]>([]);
-    const sessionId = useSessionId();
 
     const baseUrl = import.meta.env.VITE_API_URL;
     useEffect(() => {
         if (!sessionId) return;
-
 
         async function fetchForms() {
             const response = await fetch(`${baseUrl}/forms/session/${sessionId}`, {

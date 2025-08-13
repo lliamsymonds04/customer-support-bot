@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useSessionId } from '~/hooks/use-session-id';
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles, User} from 'lucide-react'
 import { Input } from '@components/ui/input';
@@ -16,12 +17,12 @@ import { useForms } from '~/hooks/use-forms';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
-  const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage);
-  const { forms } = useForms();
+  const sessionId = useSessionId(setErrorMessage);
+  const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage, sessionId);
+  const { forms } = useForms(sessionId);
 
   //ref for scroll
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
 
   // Auto-scroll to bottom when messages change or when processing
   useEffect(() => {
