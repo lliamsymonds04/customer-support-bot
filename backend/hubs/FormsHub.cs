@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using SupportBot.Models;
 
 namespace SupportBot.Hubs;
 
@@ -30,4 +31,12 @@ public class FormsHub : Hub
         return base.OnDisconnectedAsync(exception);
     }
 
+    // public Task SendFormToUser(string sessionId, Form formData)
+    // {
+    //     if (_userConnections.TryGetValue(sessionId, out var connectionId))
+    //     {
+    //         return Clients.Client(connectionId).SendAsync("ReceiveUserForm", formData);
+    //     }
+    //     return Task.CompletedTask;
+    // }
 }

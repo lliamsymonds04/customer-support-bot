@@ -7,6 +7,7 @@ public enum FormCategory
     Billing,
     Feedback,
     Account,
+    Request,
 }
 
 public enum FormUrgency

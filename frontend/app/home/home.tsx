@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useSessionId } from '~/hooks/use-session-id';
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles, User} from 'lucide-react'
 import { Input } from '@components/ui/input';
@@ -14,12 +13,15 @@ import BeatLoader  from 'react-spinners/BeatLoader';
 import { useChat } from '~/hooks/use-chat';
 import { useError } from '~/hooks/user-error';
 import { useForms } from '~/hooks/use-forms';
+import { useSessionId } from '~/hooks/use-session-id';
+import { useFormsHub } from '~/hooks/use-forms-hub';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
   const sessionId = useSessionId(setErrorMessage);
   const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage, sessionId);
-  const { forms } = useForms(sessionId);
+  const { formsConnectionRef, isConnectedToFormsHub } = useFormsHub(sessionId);
+  const { forms } = useForms({sessionId, formsConnectionRef, isConnectedToFormsHub});
 
   //ref for scroll
   const messagesEndRef = useRef<HTMLDivElement | null>(null);

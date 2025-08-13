@@ -88,7 +88,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-
 app.MapControllers();
-app.MapHub<FormsHub>("/formshub");
+app.MapHub<FormsHub>("/hubs/forms");
+
 app.Run();

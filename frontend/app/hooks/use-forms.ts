@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSessionId } from "./use-session-id";
-
+import * as signalR from "@microsoft/signalr";
 
 export enum FormCategory
 {
@@ -9,6 +8,7 @@ export enum FormCategory
     Billing,
     Feedback,
     Account,
+    Request,
 }
 
 export enum FormUrgency
@@ -29,7 +29,13 @@ export interface Form
     createdAt: Date;
 }
 
-export function useForms(sessionId: string | null) {
+interface useFormsType {
+    sessionId: string | null;
+    formsConnectionRef: React.RefObject<signalR.HubConnection | null>;
+    isConnectedToFormsHub: boolean;
+}
+
+export function useForms({sessionId, formsConnectionRef, isConnectedToFormsHub}: useFormsType) {
     const [forms, setForms] = useState<Form[]>([]);
 
     const baseUrl = import.meta.env.VITE_API_URL;
@@ -50,12 +56,28 @@ export function useForms(sessionId: string | null) {
             }
 
             const data = await response.json();
-            console.log("Fetched forms:", data);
             setForms(data);
         }
 
         fetchForms();
     }, [sessionId])
+
+    useEffect(() => {
+        const conn = formsConnectionRef.current;
+        if (!conn || !isConnectedToFormsHub) return;
+        console.log("listening to form webhook")
+
+        const handleNewForm = (form: Form) => {
+            console.log("New form received:", form);
+            setForms((prevForms) => [...prevForms, form]);
+        };
+
+        conn.on("ReceiveUserForm", handleNewForm);
+
+        return () => {
+            conn.off("ReceiveUserForm", handleNewForm);
+        };
+    }, [isConnectedToFormsHub, formsConnectionRef]);
 
     return {
         forms,

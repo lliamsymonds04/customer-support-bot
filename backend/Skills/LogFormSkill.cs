@@ -1,18 +1,21 @@
 using SupportBot.Models;
-using SupportBot.Data;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
 using SupportBot.Services;
+using SupportBot.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SupportBot.Skills;
 public class LogFormSkill
 {
 
     private readonly IFormsService _formsService;
+    private readonly IHubContext<FormsHub> _formsHub;
 
-    public LogFormSkill(IFormsService formsService)
+    public LogFormSkill(IFormsService formsService, IHubContext<FormsHub> formsHub)
     {
         _formsService = formsService;
+        _formsHub = formsHub;
     }
 
     [KernelFunction("LogForm")]
@@ -36,6 +39,9 @@ public class LogFormSkill
 
             Console.WriteLine($"Logging form for session {sessionId}: {description}, Category: {category}, Urgency: {urgency}");
             await _formsService.SaveFormAsync(form, sessionId);
+
+            // await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
+            await _formsHub.Clients.All.SendAsync("ReceiveUserForm", form);
 
             return "Form submitted successfully.";
         }
