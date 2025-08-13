@@ -129,7 +129,10 @@ export function Home() {
 
           <Card className="h-[600px] flex flex-col">
             <CardHeader>
-              Generated Forms
+              <CardTitle className="flex items-center space-x-2">
+                <Sparkles className="h-5 w-5 text-blue-500" />
+                <span>Generated Forms</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[500px]">
