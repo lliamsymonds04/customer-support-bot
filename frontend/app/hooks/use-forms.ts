@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSessionId } from "./use-session-id";
 
 
 export enum FormCategory
@@ -28,9 +29,36 @@ interface Form
 }
 
 export function useForms() {
-  const [forms, setForms] = useState<Form[]>([]);
+    const [forms, setForms] = useState<Form[]>([]);
+    const sessionId = useSessionId();
 
-  return {
-    forms,
-  };
+    const baseUrl = import.meta.env.VITE_API_URL;
+    useEffect(() => {
+        if (!sessionId) return;
+
+
+        async function fetchForms() {
+            const response = await fetch(`${baseUrl}/forms/session/${sessionId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Failed to fetch forms");
+                return;
+            }
+
+            const data = await response.json();
+            console.log("Fetched forms:", data);
+            setForms(data);
+        }
+
+        fetchForms();
+    }, [sessionId])
+
+    return {
+        forms,
+    };
 }

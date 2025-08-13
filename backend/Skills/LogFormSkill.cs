@@ -2,22 +2,23 @@ using SupportBot.Models;
 using SupportBot.Data;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
+using SupportBot.Services;
 
 namespace SupportBot.Skills;
 public class LogFormSkill
 {
 
-    private readonly AppDbContext _dbContext;
+    private readonly IFormsService _formsService;
 
-    public LogFormSkill(AppDbContext dbContext)
+    public LogFormSkill(IFormsService formsService)
     {
-        _dbContext = dbContext;
+        _formsService = formsService;
     }
 
     [KernelFunction("LogForm")]
-    [Description("Log a form submission with title, category, urgency, and description.")]
+    [Description("Log a form submission with sessionId, category, urgency, and description.")]
     public async Task<string> LogForm (
-        [Description("The title of the form submission.")] string title,
+        [Description("The sessionId for the user")] string sessionId,
         [Description("The description of the form submission.")] string description,
         [Description("The category of the form submission.")] FormCategory category = FormCategory.General,
         [Description("The urgency of the form submission.")] FormUrgency urgency = FormUrgency.Low
@@ -33,14 +34,13 @@ public class LogFormSkill
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
-            _dbContext.Forms.Add(form);
-            await _dbContext.SaveChangesAsync();
+            Console.WriteLine($"Logging form for session {sessionId}: {description}, Category: {category}, Urgency: {urgency}");
+            await _formsService.SaveFormAsync(form, sessionId);
 
             return "Form submitted successfully.";
         }
         catch (Exception ex)
         {
-            // Handle exceptions (e.g., log the error)
             return $"Error submitting form: {ex.Message}";
         }
     }

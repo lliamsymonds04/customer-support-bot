@@ -61,7 +61,7 @@ public class SemanticKernelService : ISemanticKernelService
             You are a helpful customer support assistant. Your role is to:
             
             1. Help customers with their questions and issues
-            2. When customers have an issue, use the LogForm function to create a ticket
+            2. When customers have an issue, request or feedback, always use the LogForm function to create a ticket
             3. Classify issues into appropriate categories 
             4. Assess urgency levels 
             5. Be friendly, professional, and helpful
@@ -125,7 +125,6 @@ public class SemanticKernelService : ISemanticKernelService
                     }
                 }
             }
-            
         }
 
         if (allResponses.Count == 0)

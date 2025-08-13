@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import type { setErrorMessage } from "./user-error";
 
 
-export function useSessionId(setErrorMessage: setErrorMessage) {
+export function useSessionId(setErrorMessage?: setErrorMessage) {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const isChecking = useRef(false);
 
@@ -17,7 +17,9 @@ export function useSessionId(setErrorMessage: setErrorMessage) {
 
                 return response.ok;
             } catch (error) {
-                setErrorMessage("Failed to check session ID");
+                if (setErrorMessage != null) {
+                    setErrorMessage("Failed to check session ID");
+                }
             }
 
             return false;
@@ -49,7 +51,9 @@ export function useSessionId(setErrorMessage: setErrorMessage) {
                         localStorage.setItem("sessionId", newSessionId);
                     }
                 } catch {
-                    setErrorMessage("Failed to create session");
+                    if (setErrorMessage != null) {
+                        setErrorMessage("Failed to create session");
+                    }
                 }
                 
             }

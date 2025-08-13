@@ -59,6 +59,9 @@ public class RedisSessionManager : ISessionManager
             LastActivity = DateTime.UtcNow
         };
 
+        Console.WriteLine($"Creating new session with ID: {sessionId}");
+        newSession.ChatHistory.AddSystemMessage($"SessionId: {sessionId}");
+
         await UpdateSessionAsync(newSession);
         return newSession;
     }
@@ -112,7 +115,7 @@ public class RedisSessionManager : ISessionManager
                 chatHistory.AddUserMessage(message.Content);
             else if (message.Role == "assistant")
                 chatHistory.AddAssistantMessage(message.Content);
-            else
+            else if (message.Role == "system")
                 chatHistory.AddSystemMessage(message.Content);
         }
         return chatHistory;
