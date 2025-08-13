@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SupportBot.Skills;
 using SupportBot.Data;
 using SupportBot.Services;
+using SupportBot.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,11 @@ builder.Services.AddCors(options =>
                           .AllowAnyHeader()
                           .AllowCredentials());
 });
+
+
+// Add SignalR
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Cors
@@ -84,4 +90,5 @@ if (app.Environment.IsDevelopment())
 
 
 app.MapControllers();
+app.MapHub<FormsHub>("/formshub");
 app.Run();
