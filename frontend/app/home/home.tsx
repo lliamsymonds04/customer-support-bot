@@ -4,6 +4,7 @@ import { Input } from '@components/ui/input';
 import { Button } from '@components/ui/button';
 import {ScrollArea} from '@components/ui/scroll-area';
 import { Badge } from '@components/ui/badge';
+import { FormPreview } from '@components/form-preview';
 import Markdown from 'react-markdown';
 import BeatLoader  from 'react-spinners/BeatLoader';
 
@@ -142,7 +143,9 @@ export function Home() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    
+                    {forms.map((form) => (
+                      <FormPreview key={form.id} form={form} />
+                    ))}
                   </div>
                 )}
               </ScrollArea>

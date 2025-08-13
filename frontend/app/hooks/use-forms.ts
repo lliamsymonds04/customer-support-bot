@@ -19,8 +19,9 @@ export enum FormUrgency
     Critical
 }
 
-interface Form
+export interface Form
 {
+    id: number;
     title: string;
     description: string;
     category: FormCategory;

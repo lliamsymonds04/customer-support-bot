@@ -45,6 +45,7 @@ public class FormsService : IFormsService
         var sessionFormIds = await GetSessionFormIdsAsync(sessionId);
         var updatedFormIds = sessionFormIds.ToList();
         updatedFormIds.Add(form.Id);
+        Console.WriteLine($"Caching form ID {form.Id} for session {sessionId}. Current IDs: {string.Join(", ", updatedFormIds)}");
 
         var sessionFormsJson = JsonSerializer.Serialize(updatedFormIds);
         await _cache.SetStringAsync($"sessionForms:{sessionId}", sessionFormsJson, new DistributedCacheEntryOptions
@@ -57,15 +58,15 @@ public class FormsService : IFormsService
     {
         if (form == null) throw new ArgumentNullException(nameof(form));
 
+        // Save the form to the database
+        _dbContext.Forms.Add(form);
+        await _dbContext.SaveChangesAsync();
+
         // Cache the form for the session
         if (!string.IsNullOrEmpty(sessionId))
         {
             await CacheFormForSessionAsync(form, sessionId);
         }
-
-        // Save the form to the database
-        _dbContext.Forms.Add(form);
-        await _dbContext.SaveChangesAsync();
     }
     
 
