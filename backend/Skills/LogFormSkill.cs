@@ -41,7 +41,6 @@ public class LogFormSkill
             await _formsService.SaveFormAsync(form, sessionId);
 
             await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
-            // await _formsHub.Clients.All.SendAsync("ReceiveUserForm", form);
 
             return "Form submitted successfully.";
         }

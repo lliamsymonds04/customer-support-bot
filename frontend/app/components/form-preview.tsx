@@ -16,11 +16,18 @@ export function FormPreview({ form }: { form: Form }) {
         <CardContent>
             <div className="flex flex-row items-center gap-4">
                 <div className={`rounded-full h-4 w-4`} style={{ backgroundColor: urgencyColorMap[form.urgency] }}></div>
-                <h3 className="text-lg font-semibold">Urgency: {FormUrgency[form.urgency]} </h3>
-                <h3 className="text-lg font-semibold">Category: {FormCategory[form.category]}</h3>
+                <h3 className="text-lg "><span className="font-semibold">Urgency: </span>{FormUrgency[form.urgency]} </h3>
+                <h3 className="text-lg "><span className="font-semibold">Category: </span>{FormCategory[form.category]}</h3>
 
             </div>
-            <p className="ml-10 text-md text-gray-600 text-wrap">{form.description}</p>
+            <div className="flex flex-col ml-10">
+                <p className="text-md text-gray-600 text-wrap">{form.description}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                    <span className="font-semibold">Date: </span>
+                    {form.createdAt ? new Date(form.createdAt).toLocaleString() : "N/A"}
+                </p>
+            </div>
+            
         </CardContent>
     </Card>
   );
