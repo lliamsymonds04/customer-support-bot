@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import {Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
 import { Bot, Sparkles, User} from 'lucide-react'
 import { Input } from '@components/ui/input';
@@ -15,6 +15,7 @@ import { useError } from '~/hooks/user-error';
 import { useForms } from '~/hooks/use-forms';
 import { useSessionId } from '~/hooks/use-session-id';
 import { useFormsHub } from '~/hooks/use-forms-hub';
+import { useAutoScroll } from '~/hooks/use-autoscroll';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
@@ -25,23 +26,11 @@ export function Home() {
 
   //ref for scroll
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const formsEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll to bottom when messages change or when processing
-  useEffect(() => {
-    const scrollToBottom = () => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        })
-      }
-    }
-
-    // Small delay to ensure DOM is updated
-    const timeoutId = setTimeout(scrollToBottom, 100)
-
-    return () => clearTimeout(timeoutId)
-  }, [messages, isProcessing])
+  useAutoScroll(messagesEndRef, [messages, isProcessing])
+  useAutoScroll(formsEndRef, [forms]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -179,6 +168,8 @@ export function Home() {
                     ))}
                   </div>
                 )}
+
+                <div ref={formsEndRef} className="h-1" />
               </ScrollArea>
             </CardContent>
           </Card>
