@@ -27,6 +27,8 @@ export function useUser() {
             const storedUsername = localStorage.getItem("username");
             const storedRole = localStorage.getItem("role");
 
+            if (!storedUsername) return;
+
             check()
                 .then(() => {
                     setUsername(storedUsername);

@@ -58,12 +58,16 @@ export function Home() {
                 </Button>
               </Link>
             ) : (
-              <Link to="/auth/logout">
-                <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
-                  <User className="h-4 w-4" />
-                  <span>Logout</span>
-                </Button>
-              </Link>
+              <div className='flex flex-row items-center gap-4'>
+                <User className="h-6 w-6 text-gray-600" />
+                <span className="text-md text-gray-600">{username}: ({role})</span>
+                <Link to="/auth/logout">
+                  <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
+                    {/* <User className="h-4 w-4" /> */}
+                    <span>Logout</span>
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

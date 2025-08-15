@@ -8,7 +8,7 @@ export default function AuthLayout() {
     ? "Log In to Your Account"
     : pathname.endsWith("/signup")
     ? "Create a New Account"
-    : "Authentication";
+    : "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
