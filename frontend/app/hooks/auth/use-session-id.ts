@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import type { setErrorMessage } from "./user-error";
+import type { setErrorMessage } from "../util/user-error";
 
 
 export function useSessionId(setErrorMessage?: setErrorMessage) {

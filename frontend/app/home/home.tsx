@@ -12,11 +12,11 @@ import BeatLoader  from 'react-spinners/BeatLoader';
 
 //hooks
 import { useChat } from '~/hooks/use-chat';
-import { useError } from '~/hooks/user-error';
+import { useError } from '~/hooks/util/user-error';
 import { useForms } from '~/hooks/use-forms';
-import { useSessionId } from '~/hooks/use-session-id';
+import { useSessionId } from '~/hooks/auth/use-session-id';
 import { useFormsHub } from '~/hooks/use-forms-hub';
-import { useAutoScroll } from '~/hooks/use-autoscroll';
+import { useAutoScroll } from '~/hooks/util/use-autoscroll';
 import { useUser } from '~/hooks/auth/use-user';
 
 export function Home() {
@@ -63,7 +63,6 @@ export function Home() {
                 <span className="text-md text-gray-600">{username}: ({role})</span>
                 <Link to="/auth/logout">
                   <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
-                    {/* <User className="h-4 w-4" /> */}
                     <span>Logout</span>
                   </Button>
                 </Link>

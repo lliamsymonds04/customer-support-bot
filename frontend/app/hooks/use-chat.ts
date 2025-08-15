@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { setErrorMessage } from './user-error';
+import type { setErrorMessage } from './util/user-error';
 
 export type Message = {
     id: string;

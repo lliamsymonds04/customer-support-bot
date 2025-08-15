@@ -12,7 +12,7 @@ import { Input } from "@components/ui/input";
 import { Link } from "react-router";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import ContinueWith from "./components/continue-with";
-import { useError } from "~/hooks/user-error";
+import { useError } from "~/hooks/util/user-error";
 
 export function Signup() {
   const [showPassword, setShowPassword] = useState(false);
