@@ -10,28 +10,209 @@ import { Button } from "~/components/ui/button";
 import { Label } from "@components/ui/label";
 import { Input } from "@components/ui/input";
 import { Link } from "react-router";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import ContinueWith from "./components/continue-with";
+import { useError } from "~/hooks/user-error";
 
 export function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const { error, setErrorMessage } = useError(3000);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+		setIsLoading(true);
     // Handle login logic here
+    if (formData.password !== formData.confirmPassword) {
+      // Show error
+      setErrorMessage("Passwords do not match");
+			setIsLoading(false);
+
+      return;
+    }
+
+    // Proceed with signup
+    try {
+    } catch {
+      // Show error
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <>
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl text-center">Get started</CardTitle>
         <CardDescription className="text-center">
-          Enter your credentials to access your account
+          Create your account to start building forms with AI
         </CardDescription>
       </CardHeader>
+
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+            Error: {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="pl-10"
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="pl-10"
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="pl-10 pr-10"
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className="pl-10 pr-10"
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              id="terms"
+              type="checkbox"
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              required
+              disabled={isLoading}
+            />
+            <Label htmlFor="terms" className="text-sm text-gray-600">
+              I agree to the{" "}
+              <Link to="/terms" className="text-blue-600 hover:text-blue-800">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="text-blue-600 hover:text-blue-800">
+                Privacy Policy
+              </Link>
+            </Label>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              "Create account"
+            )}
+          </Button>
+        </form>
+
+        <ContinueWith isLoading={isLoading} />
+      </CardContent>
+
+      <CardFooter>
+        <div className="text-sm text-center text-gray-600 w-full">
+          Already have an account?{" "}
+          <Link
+            to="/auth/login"
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Sign in
+          </Link>
+        </div>
+      </CardFooter>
     </>
   );
 }

@@ -1,16 +1,14 @@
-import { Outlet, Link } from "react-router";
-import { Card, } from "@components/ui/card";
-import { Sparkles } from 'lucide-react';
-import { useEffect } from "react";
+import { Outlet, Link, useLocation } from "react-router";
+import { Card } from "@components/ui/card";
+import { Sparkles } from "lucide-react";
 
 export default function AuthLayout() {
-  let heading = "Authentication";
-
-  useEffect(() => {
-    if (location.pathname.endsWith("/login")) heading = "Log In to Your Account";
-    if (location.pathname.endsWith("/signin")) heading = "Create a New Account";
-
-  }, []);
+  const { pathname } = useLocation();
+  const heading = pathname.endsWith("/login")
+    ? "Log In to Your Account"
+    : pathname.endsWith("/signup")
+    ? "Create a New Account"
+    : "Authentication";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
@@ -23,7 +21,7 @@ export default function AuthLayout() {
             </div>
             <span>AI Support Bot</span>
           </Link>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-gray-600 mt-2">{heading}</p>
         </div>
 
           <Card className="shadow-lg">
