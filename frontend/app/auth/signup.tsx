@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Label } from "@components/ui/label";
 import { Input } from "@components/ui/input";
 import { Link } from "react-router";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import ContinueWith from "./components/continue-with";
 import { useError } from "~/hooks/user-error";
 
