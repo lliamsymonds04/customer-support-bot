@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Label } from "@components/ui/label";
 import { Input } from "@components/ui/input";
 import { Link } from "react-router";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
 import ContinueWith from "./components/continue-with";
 import { useError } from "~/hooks/user-error";
 
@@ -19,7 +19,7 @@ export function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
@@ -34,13 +34,12 @@ export function Signup() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-		setIsLoading(true);
-    // Handle login logic here
+    setIsLoading(true);
+    // Handle signup logic here
     if (formData.password !== formData.confirmPassword) {
       // Show error
       setErrorMessage("Passwords do not match");
-			setIsLoading(false);
-
+      setIsLoading(false);
       return;
     }
 
@@ -71,15 +70,15 @@ export function Signup() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+							<User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Enter your username"
+                value={formData.username}
                 onChange={handleInputChange}
                 className="pl-10"
                 required

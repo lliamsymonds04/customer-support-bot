@@ -4,11 +4,11 @@ import { Button } from "~/components/ui/button";
 import { Label } from "@components/ui/label";
 import { Input } from "@components/ui/input";
 import { Link } from 'react-router';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, User } from 'lucide-react';
 import ContinueWith from './components/continue-with';
 
 export function Login() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -27,15 +27,14 @@ export function Login() {
 				<CardContent className="space-y-4">
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="email">Email</Label>
+							<Label htmlFor="username">Username</Label>
 							<div className="relative">
-								<Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+								<User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
 								<Input
-									id="email"
-									type="email"
-									placeholder="Enter your email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
+									type="username"
+									placeholder="Enter your username"
+									value={username}
+									onChange={(e) => setUsername(e.target.value)}
 									className="pl-10"
 									required
 									disabled={isLoading}
