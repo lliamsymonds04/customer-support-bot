@@ -8,7 +8,7 @@ using SupportBot.Models;
 
 public interface IAuthService
 {
-    string GenerateJwtToken(User user);
+    string GenerateJwtToken(User user, bool isRefreshToken = false);
     ClaimsPrincipal? ValidateJwtToken(string token);
     Task<bool> UserExistsAsync(string username);
     int GetUserIdByJwt(string token);
@@ -26,7 +26,7 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    public string GenerateJwtToken(User user)
+    public string GenerateJwtToken(User user, bool isRefreshToken = false)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
@@ -41,12 +41,22 @@ public class AuthService : IAuthService
             SecurityAlgorithms.HmacSha256
         );
 
-        var claims = new[]
+        Claim[] claims;
+
+        if (!isRefreshToken)
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
-        };
+            // Access token claims
+            claims =
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            ];
+        }
+        else
+        {
+            claims = [];
+        }
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],

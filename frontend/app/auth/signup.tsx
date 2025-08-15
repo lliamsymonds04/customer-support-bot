@@ -54,10 +54,31 @@ export function Signup() {
 				body: JSON.stringify({
 					username: formData.username,
 					password: formData.password,
-				})
+				}),
+				credentials: "include", 
 			})
-    } catch {
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw Error(errorData.message || "Failed to create account");
+			}
+
+			const data = await response.json();
+
+			console.log("successfully signed up", data);
+
+			localStorage.setItem("username", formData.username);
+			localStorage.setItem("role", data.role);
+
+			// Handle successful signup
+			window.location.href = "/"
+    } catch (error) {
       // Show error
+			if (error instanceof Error) {
+				setErrorMessage(error.message || "Failed to create account");
+			} else {
+				setErrorMessage("Failed to create account");
+			}
     } finally {
       setIsLoading(false);
     }

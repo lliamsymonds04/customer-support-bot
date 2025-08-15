@@ -12,10 +12,46 @@ export function Login() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 			event.preventDefault();
 			// Handle login logic here
+			
+			setIsLoading(true);
+			try {
+				const baseUrl = import.meta.env.VITE_API_URL;
+				const response = await fetch(`${baseUrl}/auth/login`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ username, password, rememberMe }),
+					credentials: 'include'
+				});
+
+				if (!response.ok) {
+					throw new Error('Login failed');
+				}
+
+				const data = await response.json();
+				console.log('Login successful:', data);
+
+				//nav to home
+				if (rememberMe) {
+					localStorage.setItem("rememberMe", "true");
+				}
+
+				localStorage.setItem("username", username);
+				localStorage.setItem("role", data.role);
+				// Navigate to home
+
+				// window.location.href = '/';
+			} catch (error) {
+				console.error('Error logging in:', error);
+			} finally {
+				setIsLoading(false);
+			}
     }
 
     return (
@@ -73,6 +109,8 @@ export function Login() {
 									id="remember"
 									type="checkbox"
 									className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+									checked={rememberMe}
+									onChange={(e) => setRememberMe(e.target.checked)}
 									disabled={isLoading}
 								/>
 								<Label htmlFor="remember" className="text-sm text-gray-600 bg-transparent">
@@ -101,16 +139,16 @@ export function Login() {
 
 				<CardFooter className="flex flex-col space-y-4">
 						<div className="text-sm text-center text-gray-600">
-						Don't have an account?{' '}
-						<Link to="/auth/signup" className="text-blue-600 hover:text-blue-800 font-medium">
+							Don't have an account?{' '}
+							<Link to="/auth/signup" className="text-blue-600 hover:text-blue-800 font-medium">
 								Sign up
-						</Link>
+							</Link>
 						</div>
 						
 						<div className="text-xs text-center text-gray-500">
-						<p className="mb-2">Demo credentials:</p>
-						<p>Email: demo@example.com</p>
-						<p>Password: password</p>
+							<p className="mb-2">Demo credentials:</p>
+							<p>Email: demo@example.com</p>
+							<p>Password: password</p>
 						</div>
 				</CardFooter>
 			</>

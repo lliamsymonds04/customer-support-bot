@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SupportBot.Skills;
 using SupportBot.Data;
 using SupportBot.Services;
@@ -63,9 +64,35 @@ builder.Services.AddScoped<ISemanticKernelService, SemanticKernelService>();
 // Add Auth Service
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// Configure JWT authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtSecretKey = jwtSettings["SecretKey"];
+if (string.IsNullOrEmpty(jwtSecretKey))
+{
+    throw new InvalidOperationException("JWT Secret Key is not configured.");
+}
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecretKey))
+    };
+});
+
 // Add Cors Policy
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-Console.WriteLine($"Allowed Origins: {string.Join(", ", allowedOrigins)}");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",
@@ -89,6 +116,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Jwt authentication
+app.UseMiddleware<JwtFromCookieMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<FormsHub>("/hubs/forms");

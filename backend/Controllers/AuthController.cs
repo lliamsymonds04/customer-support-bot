@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        var token = HandleToken(user, TokenType.AuthToken);
+        HandleToken(user, TokenType.AuthToken);
         if (request.RememberMe)
         {
             HandleToken(user, TokenType.RefreshToken);
@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            role = user.Role,
+            role = user.Role.ToString(),
         });
     }
 
@@ -100,7 +100,7 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            role = newUser.Role,
+            role = newUser.Role.ToString(),
         });
     }
 
@@ -118,6 +118,10 @@ public class AuthController : ControllerBase
 
         var cookieName = _configuration["JwtSettings:AuthTokenName"] ?? "auth_token";
         Response.Cookies.Append(cookieName, "", cookieOptions);
+
+        //remove the refresh token cookie
+        var refreshCookieName = _configuration["JwtSettings:RefreshTokenName"] ?? "refresh_token";
+        Response.Cookies.Append(refreshCookieName, "", cookieOptions);
 
         return Ok("Logged out successfully.");
     }
@@ -164,7 +168,7 @@ public class AuthController : ControllerBase
 
     private string HandleToken(User user, TokenType tokenType)
     {
-        var token = _authService.GenerateJwtToken(user);
+        var token = _authService.GenerateJwtToken(user, tokenType == TokenType.RefreshToken);
 
         var expiryTime = tokenType == TokenType.AuthToken
             ? _configuration.GetValue<int>("JwtSettings:ExpiryTime")
@@ -172,6 +176,7 @@ public class AuthController : ControllerBase
 
         var cookieOptions = new CookieOptions
         {
+            Path = "/",
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
@@ -183,6 +188,8 @@ public class AuthController : ControllerBase
             : _configuration["JwtSettings:RefreshTokenName"] ?? "refresh_token";
 
         Response.Cookies.Append(cookieName, token, cookieOptions);
+
+        Console.WriteLine($"Set {cookieName} cookie with value: {token}");
 
         return token;
     }

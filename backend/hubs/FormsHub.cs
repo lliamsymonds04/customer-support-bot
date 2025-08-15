@@ -13,7 +13,6 @@ public class FormsHub : Hub
         if (!string.IsNullOrEmpty(sessionId))
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-            // _userConnections[sessionId] = Context.ConnectionId;
         }
         await base.OnConnectedAsync();
     }
@@ -24,7 +23,6 @@ public class FormsHub : Hub
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
-            Console.WriteLine($"[FormsHub] Removed {Context.ConnectionId} from group {sessionId}");
         }
 
         await base.OnDisconnectedAsync(exception);

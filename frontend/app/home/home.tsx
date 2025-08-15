@@ -17,6 +17,7 @@ import { useForms } from '~/hooks/use-forms';
 import { useSessionId } from '~/hooks/use-session-id';
 import { useFormsHub } from '~/hooks/use-forms-hub';
 import { useAutoScroll } from '~/hooks/use-autoscroll';
+import { useUser } from '~/hooks/auth/use-user';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
@@ -24,6 +25,7 @@ export function Home() {
   const { messages, input, handleInputChange, handleSubmit, isProcessing} = useChat(setErrorMessage, sessionId);
   const { formsConnectionRef, isConnectedToFormsHub } = useFormsHub(sessionId);
   const { forms } = useForms({sessionId, formsConnectionRef, isConnectedToFormsHub});
+  const { username, role } = useUser();
 
   //ref for scroll
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -48,12 +50,21 @@ export function Home() {
                 <p className="text-gray-600">Your AI-powered customer support assistant.</p>
               </div>
             </div>
-            <Link to="/auth/login">
-              <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
-                <User className="h-4 w-4" />
-                <span>Login</span>
-              </Button>
-            </Link>
+            {username == null ? (
+              <Link to="/auth/login">
+                <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
+                  <User className="h-4 w-4" />
+                  <span>Login</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth/logout">
+                <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
+                  <User className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>

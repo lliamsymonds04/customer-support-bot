@@ -19,7 +19,6 @@ public class FormsController : ControllerBase
     public async Task<IActionResult> GetFormsForSession(string sessionId)
     {
         var formIds = await _formService.GetSessionFormIdsAsync(sessionId);
-        Console.WriteLine($"Form IDs for session {sessionId}: {string.Join(", ", formIds)}");
         var forms = await _formService.GetFormsByIdsAsync(formIds);
 
         return Ok(forms);
