@@ -6,6 +6,7 @@ import { Button } from '@components/ui/button';
 import {ScrollArea} from '@components/ui/scroll-area';
 import { Badge } from '@components/ui/badge';
 import { FormPreview } from '@components/form-preview';
+import { Link } from "react-router";
 import Markdown from 'react-markdown';
 import BeatLoader  from 'react-spinners/BeatLoader';
 
@@ -47,6 +48,12 @@ export function Home() {
                 <p className="text-gray-600">Your AI-powered customer support assistant.</p>
               </div>
             </div>
+            <Link to="/auth/login">
+              <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
+                <User className="h-4 w-4" />
+                <span>Login</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
