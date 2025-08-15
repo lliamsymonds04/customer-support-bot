@@ -19,7 +19,6 @@ export function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -71,24 +70,6 @@ export function Signup() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="pl-10"
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
