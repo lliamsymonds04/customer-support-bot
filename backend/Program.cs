@@ -17,7 +17,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 
-
 // Build connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (connectionString != null && connectionString.Contains("{DatabasePassword}"))
@@ -60,6 +59,9 @@ builder.Services.AddSingleton<GroqConfig>(sp =>
 
 // Add Semantic Kernel service
 builder.Services.AddScoped<ISemanticKernelService, SemanticKernelService>();
+
+// Add Auth Service
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add Cors Policy
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();

@@ -45,6 +45,17 @@ export function Signup() {
 
     // Proceed with signup
     try {
+			const baseUrl = import.meta.env.VITE_API_URL;
+			const response = await fetch(`${baseUrl}/auth/signup`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					username: formData.username,
+					password: formData.password,
+				})
+			})
     } catch {
       // Show error
     } finally {
