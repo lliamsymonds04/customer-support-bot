@@ -40,6 +40,8 @@ export function Login() {
 				//nav to home
 				if (rememberMe) {
 					localStorage.setItem("rememberMe", "true");
+				} else {
+					localStorage.removeItem("rememberMe");
 				}
 
 				localStorage.setItem("username", username);

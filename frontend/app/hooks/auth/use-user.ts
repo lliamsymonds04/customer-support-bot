@@ -35,7 +35,7 @@ export function useUser() {
                     setRole(storedRole);
                 })
                 .catch(() => {
-                    const rememberMe = localStorage.getItem("rememberMe") === "yes";
+                    const rememberMe = localStorage.getItem("rememberMe") === "true";
                     if (rememberMe) {
                         refresh()
                             .then(() => {
@@ -44,7 +44,8 @@ export function useUser() {
                             })
                             .catch(console.error);
                     } else {
-                        localStorage.removeItem("username");
+                        // localStorage.removeItem("username");
+                        // localStorage.removeItem("role")
                         setUsername(null);
                         setRole(null);
                     }
