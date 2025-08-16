@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { setErrorMessage } from './util/user-error';
 
 export type Message = {
@@ -11,6 +11,7 @@ export function useChat(setErrorMessage: setErrorMessage, sessionId: string | nu
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
+    const submittedInput = useRef<string | null>(null);
     const baseUrl = import.meta.env.VITE_API_URL;
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,10 +24,13 @@ export function useChat(setErrorMessage: setErrorMessage, sessionId: string | nu
         if (!input || !sessionId) return;
         setIsProcessing(true);
 
+        submittedInput.current = input;
+        setInput("");
+
         // add the user input to messages array
         const userMessage: Message = {
             id: Date.now().toString(),
-            text: input,
+            text: submittedInput.current,
             role: 'user',
         };
 
@@ -40,7 +44,7 @@ export function useChat(setErrorMessage: setErrorMessage, sessionId: string | nu
                 },
                 body: JSON.stringify({
                     sessionId,
-                    prompt: input,
+                    prompt: submittedInput.current,
                 }),
             });
 
@@ -61,7 +65,6 @@ export function useChat(setErrorMessage: setErrorMessage, sessionId: string | nu
             setErrorMessage("Failed to send message");
         } finally {
             setIsProcessing(false);
-            setInput("");
         }
     }
 
