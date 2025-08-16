@@ -11,11 +11,15 @@ public class LogFormSkill
 
     private readonly IFormsService _formsService;
     private readonly IHubContext<FormsHub> _formsHub;
+    private readonly ISessionManager _sessionManager;
+    private readonly IAuthService _authService;
 
-    public LogFormSkill(IFormsService formsService, IHubContext<FormsHub> formsHub)
+    public LogFormSkill(IFormsService formsService, IHubContext<FormsHub> formsHub, ISessionManager sessionManager, IAuthService authService)
     {
         _formsService = formsService;
         _formsHub = formsHub;
+        _sessionManager = sessionManager;
+        _authService = authService;
     }
 
     [KernelFunction("LogForm")]
@@ -29,15 +33,29 @@ public class LogFormSkill
     {
         try
         {
+            var session = await _sessionManager.GetOrCreateSessionAsync(sessionId);
+            int? userId = null;
+            try
+            {
+                var token = _authService.GetUserJwtToken();
+                userId = _authService.GetUserIdByJwt(token);
+                Console.WriteLine($"User ID from JWT: {userId}");
+            }
+            catch (Exception ex)
+            {
+                // Handle token parsing errors
+                Console.WriteLine($"Error parsing JWT: {ex.Message}");
+            }
+
             var form = new Form
             {
                 Description = description,
                 category = category,
                 urgency = urgency,
-                CreatedAt = DateTimeOffset.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow,
+                UserId = userId
             };
 
-            Console.WriteLine($"Logging form for session {sessionId}: {description}, Category: {category}, Urgency: {urgency}");
             await _formsService.SaveFormAsync(form, sessionId);
 
             await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);

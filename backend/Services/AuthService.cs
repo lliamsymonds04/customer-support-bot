@@ -12,6 +12,7 @@ public interface IAuthService
     ClaimsPrincipal? ValidateJwtToken(string token);
     Task<bool> UserExistsAsync(string username);
     int GetUserIdByJwt(string token);
+    string GetUserJwtToken();
 }
 
 public class AuthService : IAuthService
@@ -121,6 +122,26 @@ public class AuthService : IAuthService
         }
 
         return userId;
+    }
+
+    public string GetUserJwtToken()
+    {
+        var httpContext = new HttpContextAccessor().HttpContext;
+
+        if (httpContext == null)
+        {
+            throw new InvalidOperationException("No active HTTP context.");
+        }
+
+        var cookieName = _configuration["JwtSettings:AuthTokenName"] ?? "AuthToken";
+        var token = httpContext.Request.Cookies[cookieName];
+
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException("JWT token is missing.");
+        }
+
+        return token;
     }
 
     public async Task<bool> UserExistsAsync(string username)

@@ -189,8 +189,6 @@ public class AuthController : ControllerBase
 
         Response.Cookies.Append(cookieName, token, cookieOptions);
 
-        Console.WriteLine($"Set {cookieName} cookie with value: {token}");
-
         return token;
     }
 }

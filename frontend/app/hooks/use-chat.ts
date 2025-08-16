@@ -46,6 +46,7 @@ export function useChat(setErrorMessage: setErrorMessage, sessionId: string | nu
                     sessionId,
                     prompt: submittedInput.current,
                 }),
+                credentials:"include",
             });
 
             if (!response.ok) {

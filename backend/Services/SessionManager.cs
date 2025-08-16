@@ -11,6 +11,7 @@ public interface ISessionManager
     Task UpdateSessionAsync(UserSession session);
     Task RemoveSessionAsync(string sessionId);
     Task<bool> SessionExistsAsync(string sessionId);
+    Task AddUserToSession(UserSession session, int userId);
 }
 
 public class RedisSessionManager : ISessionManager
@@ -86,6 +87,12 @@ public class RedisSessionManager : ISessionManager
         await _cache.SetStringAsync($"session:{session.Id}", sessionJson, options);
     }
 
+    public async Task AddUserToSession(UserSession session, int userId)
+    {
+        session.UserId = userId;
+        await UpdateSessionAsync(session);
+    }
+
     public async Task RemoveSessionAsync(string sessionId)
     {
         await _cache.RemoveAsync($"session:{sessionId}");
@@ -141,4 +148,5 @@ public class UserSession
     public required ChatHistory ChatHistory { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastActivity { get; set; }
+    public int UserId { get; set; }
 }

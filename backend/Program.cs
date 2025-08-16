@@ -35,11 +35,13 @@ else if (connectionString == null)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddHttpContextAccessor();
+
 // Register skills
 builder.Services.AddScoped<LogFormSkill>();
 
 // Add session manager
-builder.Services.AddSingleton<ISessionManager, RedisSessionManager>();
+builder.Services.AddScoped<ISessionManager, RedisSessionManager>();
 
 // Add form service
 builder.Services.AddScoped<IFormsService, FormsService>();
