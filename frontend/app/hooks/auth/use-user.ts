@@ -44,8 +44,6 @@ export function useUser() {
                             })
                             .catch(console.error);
                     } else {
-                        // localStorage.removeItem("username");
-                        // localStorage.removeItem("role")
                         setUsername(null);
                         setRole(null);
                     }

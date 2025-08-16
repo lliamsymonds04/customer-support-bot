@@ -1,5 +1,5 @@
-import type { Form } from "~/hooks/use-forms"
-import { FormCategory, FormUrgency } from "~/hooks/use-forms";
+import type { Form } from "@/types/Form"
+import { FormCategory, FormUrgency } from "@/types/Form";
 import { Card, CardTitle, CardContent, CardHeader } from "~/components/ui/card";
 
 

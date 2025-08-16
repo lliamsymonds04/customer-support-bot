@@ -1,33 +1,6 @@
 import { useState, useEffect } from "react";
+import type { Form } from "@/types/Form";
 import * as signalR from "@microsoft/signalr";
-
-export enum FormCategory
-{
-    General,
-    Technical,
-    Billing,
-    Feedback,
-    Account,
-    Request,
-}
-
-export enum FormUrgency
-{
-    Low,
-    Medium,
-    High,
-    Critical
-}
-
-export interface Form
-{
-    id: number;
-    title: string;
-    description: string;
-    category: FormCategory;
-    urgency: FormUrgency;
-    createdAt: Date;
-}
 
 interface useFormsType {
     sessionId: string | null;
