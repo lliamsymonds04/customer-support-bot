@@ -46,7 +46,7 @@ export function Login() {
 				localStorage.setItem("role", data.role);
 				// Navigate to home
 
-				// window.location.href = '/';
+				window.location.href = '/';
 			} catch (error) {
 				console.error('Error logging in:', error);
 			} finally {

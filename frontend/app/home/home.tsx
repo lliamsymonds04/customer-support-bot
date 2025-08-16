@@ -58,9 +58,9 @@ export function Home() {
                 </Button>
               </Link>
             ) : (
-              <div className='flex flex-row items-center gap-4'>
+              <div className='flex flex-row items-center'>
                 <User className="h-6 w-6 text-gray-600" />
-                <span className="text-md text-gray-600">({role}) {username}</span>
+                <span className="text-md mr-4">({role}): {username}</span>
                 <Link to="/auth/logout">
                   <Button variant="outline" className="flex items-center space-x-2 bg-transparent cursor-pointer">
                     <span>Logout</span>
