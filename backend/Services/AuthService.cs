@@ -17,7 +17,6 @@ public interface IAuthService
 
 public class AuthService : IAuthService
 {
-    private readonly int ExpiryTime = 60;
     private readonly IConfiguration _configuration;
     private readonly AppDbContext _context;
 
@@ -43,6 +42,7 @@ public class AuthService : IAuthService
         );
 
         Claim[] claims;
+        int expiryTime;
 
         if (!isRefreshToken)
         {
@@ -53,17 +53,19 @@ public class AuthService : IAuthService
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             ];
+            expiryTime = _configuration.GetValue<int>("JwtSettings:ExpiryTime");
         }
         else
         {
             claims = [];
+            expiryTime = _configuration.GetValue<int>("JwtSettings:RefreshTokenExpiryTime");
         }
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(ExpiryTime),
+            expires: DateTime.UtcNow.AddMinutes(expiryTime),
             signingCredentials: creds
         );
 

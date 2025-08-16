@@ -163,6 +163,7 @@ public class AuthController : ControllerBase
                 }
             }
         }
+
         return Unauthorized("User is not authenticated.");
     }
 
