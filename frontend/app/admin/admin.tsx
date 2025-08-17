@@ -5,19 +5,21 @@ import { Combobox, ConvertEnumToOptions } from '~/components/ui/combobox';
 import type { Form } from "@/types/Form";
 import { BookOpenText } from 'lucide-react';
 import { Separator } from '@components/ui/separator';
-import { FormCategory, FormUrgency } from "@/types/Form";
+import { FormCategory, FormState, FormUrgency } from "@/types/Form";
+import { Input } from '~/components/ui/input';
 
 export function Admin() {
   const { username, role } = useUser();
   const urgencyOptions = ConvertEnumToOptions(FormUrgency, "None");
   const categoryOptions = ConvertEnumToOptions(FormCategory, "None");
+  const formStateOptions = ConvertEnumToOptions(FormState, "None");
 
   return (
     <>
       <Header username={username} role={role} />
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center">
         <div className='w-full max-w-lg mt-10'>
-          <Card className='h-[600px] flex flex-col'>
+          <Card className='h-[800px] flex flex-col'>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 justify-center">
                 <BookOpenText className="h-5 w-5 text-blue-500" />
@@ -26,13 +28,20 @@ export function Admin() {
             </CardHeader>
 
             <CardContent className='flex flex-col flex-1 items-center'>
-              <div className='flex flex-grid gap-4'>
+              <div className='flex flex-wrap gap-4 justify-center'>
+                <Input placeholder="Key term" onChange={(value) => {
+
+                }}/>
                 <Combobox options={categoryOptions} placeholder="Category" onChange={(value) => {
 
                 }}/>
                 <Combobox options={urgencyOptions} placeholder="Urgency" onChange={(value) => {
 
                 }}/>
+                <Combobox options={formStateOptions} placeholder="State" onChange={(value) => {
+
+                }}/>
+                
               </div>
               <Separator className="my-4" />
             </CardContent>

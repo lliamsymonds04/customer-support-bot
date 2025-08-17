@@ -5,7 +5,7 @@ The Customer Support Bot is a full-stack application designed to streamline cust
 
 ## Features
 - **Chatbot**: AI-powered chatbot for customer support.
-- **Admin Panel**: Manage users, forms, and sessions.
+- **Admin Panel**: Manage forms.
 - **Real-Time Updates**: SignalR integration for live updates.
 - **Session Management**: Redis-backed session storage.
 - **Authentication**: JWT-based authentication with role-based access control.
@@ -50,8 +50,10 @@ The Customer Support Bot is a full-stack application designed to streamline cust
 3. Configure environment variables:
    - **Frontend**: Update `.env` with `VITE_API_URL`.
    - **Backend**: Use `appsettings.json` and `dotnet user-secrets` for sensitive data.
+   
+4. Configure redis and sql server using appsettings
 
-4. Run the application:
+5. Run the application:
    - **Backend**:
      ```bash
      dotnet run
@@ -61,9 +63,9 @@ The Customer Support Bot is a full-stack application designed to streamline cust
      npm run dev
      ```
 
-5. Access the application:
+6. Access the application:
    - Frontend: `http://localhost:5173`
-   - Backend: `http://localhost:5000`
+   - Backend: `http://localhost:5153`
 
 ## Usage
 ### Admin Panel

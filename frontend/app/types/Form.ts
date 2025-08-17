@@ -16,6 +16,13 @@ export enum FormUrgency
     Critical = "Critical"
 }
 
+export enum FormState
+{
+    Open = "Open",
+    InProgress = "In Progress",
+    Closed = "Closed",
+}
+
 export interface Form
 {
     id: number;
