@@ -3,6 +3,8 @@ using SupportBot.Data;
 using SupportBot.Models;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using SupportBot.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SupportBot.Services;
 
@@ -13,6 +15,7 @@ public interface IFormsService
     Task SaveFormAsync(Form form, string? sessionId);
     Task<Form?> GetFormFromIdAsync(int formId);
     Task<List<Form>> GetFormsByIdsAsync(int[] formIds);
+    Task SendForm(Form form, string sessionId);
 }
 
 public class FormsService : IFormsService
@@ -20,13 +23,17 @@ public class FormsService : IFormsService
     private readonly IDistributedCache _cache;
     private readonly TimeSpan _sessionTimeout;
     private readonly AppDbContext _dbContext;
+    private readonly IHubContext<FormsHub> _formsHub;
+    private readonly IHubContext<AdminHub> _adminHub;
 
-    public FormsService(IDistributedCache cache, IConfiguration configuration, AppDbContext dbContext)
+    public FormsService(IDistributedCache cache, IConfiguration configuration, AppDbContext dbContext, IHubContext<FormsHub> formsHub, IHubContext<AdminHub> adminHub)
     {
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _cache = cache;
         _sessionTimeout = TimeSpan.FromMinutes(
             configuration.GetValue<int>("SessionTimeoutMinutes", 120));
+        _formsHub = formsHub;
+        _adminHub = adminHub;
     }
 
     public Task<int[]> GetSessionFormIdsAsync(string sessionId)
@@ -67,7 +74,7 @@ public class FormsService : IFormsService
             await CacheFormForSessionAsync(form, sessionId);
         }
     }
-    
+
 
     public async Task<Form?> GetFormFromIdAsync(int formId)
     {
@@ -84,5 +91,11 @@ public class FormsService : IFormsService
         return await _dbContext.Forms
             .Where(f => formIds.Contains(f.Id))
             .ToListAsync();
+    }
+
+    public async Task SendForm(Form form, string sessionId)
+    {
+        await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
+        await _adminHub.Clients.Group("Admins").SendAsync("AdminReceiveForm", form);
     }
 }

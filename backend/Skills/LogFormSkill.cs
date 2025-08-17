@@ -2,22 +2,18 @@ using SupportBot.Models;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
 using SupportBot.Services;
-using SupportBot.Hubs;
-using Microsoft.AspNetCore.SignalR;
 
 namespace SupportBot.Skills;
 public class LogFormSkill
 {
 
     private readonly IFormsService _formsService;
-    private readonly IHubContext<FormsHub> _formsHub;
     private readonly ISessionManager _sessionManager;
     private readonly IAuthService _authService;
 
-    public LogFormSkill(IFormsService formsService, IHubContext<FormsHub> formsHub, ISessionManager sessionManager, IAuthService authService)
+    public LogFormSkill(IFormsService formsService, ISessionManager sessionManager, IAuthService authService)
     {
         _formsService = formsService;
-        _formsHub = formsHub;
         _sessionManager = sessionManager;
         _authService = authService;
     }
@@ -39,7 +35,6 @@ public class LogFormSkill
             {
                 var token = _authService.GetUserJwtToken();
                 userId = _authService.GetUserIdByJwt(token);
-                Console.WriteLine($"User ID from JWT: {userId}");
             }
             catch (Exception ex)
             {
@@ -58,7 +53,7 @@ public class LogFormSkill
 
             await _formsService.SaveFormAsync(form, sessionId);
 
-            await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
+            await _formsService.SendForm(form, sessionId);
 
             return "Form submitted successfully.";
         }
