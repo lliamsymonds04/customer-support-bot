@@ -147,10 +147,13 @@ public class AuthController : ControllerBase
         var cookieName = _configuration["JwtSettings:RefreshTokenName"] ?? "refresh_token";
         if (Request.Cookies.TryGetValue(cookieName, out var token))
         {
+            Console.WriteLine("Validating refresh token...");
             var principal = _authService.ValidateJwtToken(token);
             if (principal != null)
             {
+                Console.WriteLine("Refresh token is valid, generating new auth token...");
                 var userId = _authService.GetUserIdByJwt(token);
+                Console.WriteLine("User ID found:", userId);
                 var user = _context.Users.Find(userId);
                 if (user != null)
                 {

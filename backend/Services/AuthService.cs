@@ -19,11 +19,13 @@ public class AuthService : IAuthService
 {
     private readonly IConfiguration _configuration;
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthService(IConfiguration configuration, AppDbContext context)
+    public AuthService(IConfiguration configuration, AppDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _configuration = configuration;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public string GenerateJwtToken(User user, bool isRefreshToken = false)
@@ -59,6 +61,7 @@ public class AuthService : IAuthService
         {
             claims = [
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             ];
             expiryTime = _configuration.GetValue<int>("JwtSettings:RefreshTokenExpiryTime");
         }
@@ -130,15 +133,8 @@ public class AuthService : IAuthService
 
     public string GetUserJwtToken()
     {
-        var httpContext = new HttpContextAccessor().HttpContext;
-
-        if (httpContext == null)
-        {
-            throw new InvalidOperationException("No active HTTP context.");
-        }
-
         var cookieName = _configuration["JwtSettings:AuthTokenName"] ?? "AuthToken";
-        var token = httpContext.Request.Cookies[cookieName];
+        var token = _httpContextAccessor.HttpContext?.Request.Cookies[cookieName];
 
         if (string.IsNullOrEmpty(token))
         {
