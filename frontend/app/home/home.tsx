@@ -13,9 +13,9 @@ import { Header } from '~/components/header';
 //hooks
 import { useChat } from '~/hooks/use-chat';
 import { useError } from '~/hooks/util/user-error';
-import { useForms } from '~/hooks/use-forms';
+import { useForms } from '~/hooks/forms/use-forms';
 import { useSessionId } from '~/hooks/auth/use-session-id';
-import { useFormsHub } from '~/hooks/use-forms-hub';
+import { useFormsHub } from '~/hooks/forms/use-forms-hub';
 import { useAutoScroll } from '~/hooks/util/use-autoscroll';
 import { useUser } from '~/hooks/auth/use-user';
 
