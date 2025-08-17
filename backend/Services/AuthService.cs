@@ -57,7 +57,9 @@ public class AuthService : IAuthService
         }
         else
         {
-            claims = [];
+            claims = [
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            ];
             expiryTime = _configuration.GetValue<int>("JwtSettings:RefreshTokenExpiryTime");
         }
 

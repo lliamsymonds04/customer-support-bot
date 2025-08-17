@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupportBot.Models;
 using SupportBot.Services;
@@ -21,6 +22,14 @@ public class FormsController : ControllerBase
         var formIds = await _formService.GetSessionFormIdsAsync(sessionId);
         var forms = await _formService.GetFormsByIdsAsync(formIds);
 
+        return Ok(forms);
+    }
+
+    [HttpGet("admin")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetFormsForAdmin(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page = 1, int pageSize = 10)
+    {
+        var forms = await _formService.GetFormsByCriteriaAsync(urgency, state, category, keyword, page, pageSize);
         return Ok(forms);
     }
 }

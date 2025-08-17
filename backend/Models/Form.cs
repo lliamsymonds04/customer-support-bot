@@ -29,10 +29,10 @@ public class Form
 {
     public int Id { get; set; }
     public string Description { get; set; } = string.Empty;
-    public FormCategory category { get; set; } = FormCategory.General;
-    public FormUrgency urgency { get; set; } = FormUrgency.Low;
+    public FormCategory Category { get; set; } = FormCategory.General;
+    public FormUrgency Urgency { get; set; } = FormUrgency.Low;
+    public FormState State { get; set; } = FormState.Open;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public bool Completed { get; set; } = false;
 
 
     // Foreign key to User

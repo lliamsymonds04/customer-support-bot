@@ -154,10 +154,9 @@ public class AuthController : ControllerBase
                 var user = _context.Users.Find(userId);
                 if (user != null)
                 {
-                    var newToken = HandleToken(user, TokenType.AuthToken);
+                    HandleToken(user, TokenType.AuthToken);
                     return Ok(new
                     {
-                        token = newToken,
                         role = user.Role,
                     });
                 }

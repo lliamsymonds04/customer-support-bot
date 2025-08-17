@@ -45,8 +45,8 @@ public class LogFormSkill
             var form = new Form
             {
                 Description = description,
-                category = category,
-                urgency = urgency,
+                Category = category,
+                Urgency = urgency,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UserId = userId
             };

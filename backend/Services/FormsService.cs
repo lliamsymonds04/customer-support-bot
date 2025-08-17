@@ -16,6 +16,7 @@ public interface IFormsService
     Task<Form?> GetFormFromIdAsync(int formId);
     Task<List<Form>> GetFormsByIdsAsync(int[] formIds);
     Task SendForm(Form form, string sessionId);
+    Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize);
 }
 
 public class FormsService : IFormsService
@@ -97,5 +98,35 @@ public class FormsService : IFormsService
     {
         await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
         await _adminHub.Clients.Group("Admins").SendAsync("AdminReceiveForm", form);
+    }
+
+    public async Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize)
+    {
+        var query = _dbContext.Forms.AsQueryable();
+
+        if (urgency.HasValue)
+        {
+            query = query.Where(f => f.Urgency == urgency.Value);
+        }
+
+        if (state.HasValue)
+        {
+            query = query.Where(f => f.State == state.Value);
+        }
+
+        if (category.HasValue)
+        {
+            query = query.Where(f => f.Category == category.Value);
+        }
+
+        if (!string.IsNullOrEmpty(keyword))
+        {
+            query = query.Where(f => f.Description.Contains(keyword));
+        }
+
+        // sort by most recent
+        query = query.OrderByDescending(f => f.CreatedAt);
+
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync();
     }
 }
