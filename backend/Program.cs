@@ -127,6 +127,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<FormsHub>("/hubs/forms");
-app.MapHub<AdminHub>("/hubs/admins");
+app.MapHub<AdminHub>("/hubs/admin");
 
 app.Run();
