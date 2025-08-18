@@ -163,7 +163,7 @@ export function Admin() {
       <Header username={username} role={role} />
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center">
         <div className='w-full max-w-lg mt-10'>
-          <Card className='h-[800px] flex flex-col w-full'>
+          <Card className='h-[800px] flex flex-col'>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 justify-center">
                 <BookOpenText className="h-5 w-5 text-blue-500" />
@@ -171,7 +171,7 @@ export function Admin() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className='flex flex-col flex-1 items-center w-full'>
+            <CardContent className='flex flex-col items-stretch w-full'>
               <div className='flex flex-wrap gap-4 justify-center'>
                 <Input placeholder="Key term" value={keyword} onChange={(e: any) => {
                   // only update raw keyword here; fetch will happen after debounce
@@ -192,7 +192,7 @@ export function Admin() {
                 
               </div>
               <Separator className="my-4" />
-              <ScrollArea className="h-[500px]">
+              <ScrollArea className="h-[500px] px-4">
                 {forms.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">

@@ -20,7 +20,7 @@ export function FormPreview({ form }: { form: Form }) {
                 <h3 className="text-lg "><span className="font-semibold">Category: </span>{FormCategory[form.category]}</h3>
 
             </div>
-            <div className="flex flex-col ml-10">
+            <div className="ml-10">
                 <p className="text-md text-gray-600 text-wrap">{form.description}</p>
                 <p className="text-sm text-gray-500 mt-2">
                     <span className="font-semibold">Date: </span>
