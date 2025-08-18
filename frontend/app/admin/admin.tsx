@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Header } from '@components/header';
 import { Card, CardTitle, CardContent, CardHeader } from '@components/ui/card';
 import { useUser } from '~/hooks/auth/use-user';
@@ -15,16 +15,62 @@ import { FormCategory, FormState, FormUrgency } from "@/types/Form";
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { FormPreview } from '~/components/form-preview';
 
+const pageSize = 10
+
 export function Admin() {
   const { username, role } = useUser();
   const [forms, setForms] = useState<Form[]>([]);
+  const [urgency, setUrgency] = useState<FormUrgency | null>(null);
+  const [category, setCategory] = useState<FormCategory | null>(null);
+  const [formState, setFormState] = useState<FormState | null>(null);
+  const [keyword, setKeyword] = useState("");
+  const [page, setPage] = useState(1);
+  const moreFormsExist = useRef(true);
+
 
   //combobox options
   const urgencyOptions = ConvertEnumToOptions(FormUrgency, "None");
   const categoryOptions = ConvertEnumToOptions(FormCategory, "None");
   const formStateOptions = ConvertEnumToOptions(FormState, "None");
 
+  function playNotification() {
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.play();
+  }
+
+  async function fetchForms() {
+    const apiBase = import.meta.env.VITE_API_URL;
+    try {
+        const params = new URLSearchParams();
+        if (urgency !== null && urgency !== undefined) params.append("urgency", String(urgency));
+        if (formState !== null && formState !== undefined) params.append("state", String(formState));
+        if (category !== null && category !== undefined) params.append("category", String(category));
+        if (keyword && keyword.trim().length > 0) params.append("keyword", keyword.trim());
+        params.append("page", String(page));
+        params.append("pageSize", String(pageSize));
+
+        const response = await fetch(`${apiBase}/forms/admin?${params.toString()}`, {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch forms");
+        }
+        const data = await response.json();
+        console.log("Fetched forms:", data);
+        if (page === 1) {
+          setForms(data);
+        } else {
+          setForms((prevForms) => [...prevForms, ...data]);
+        }
+      } catch (error) {
+        console.error("Error fetching forms:", error);
+    }
+  }
+
   useEffect(() => {
+    if (role?.toLowerCase() !== "admin") return;
+
     const apiBase = import.meta.env.VITE_API_URL;
     const hubBase = apiBase.replace(/\/api\/?$/, "");
 
@@ -38,9 +84,12 @@ export function Admin() {
     connection.start()
       .then(() => {
         console.log("Connected to admin hub");
+
         connection.on("AdminReceiveForm", (form) => {
           console.log("Received form:", form);
-          setForms((prevForms) => [...prevForms, form]);
+          playNotification();
+          // add the new form to the front
+          setForms((prevForms) => [form, ...prevForms]);
         });
       })
       .catch(err => console.error("SignalR connection error:", err));
@@ -48,14 +97,23 @@ export function Admin() {
     return () => {
       connection.stop();
     };
-  }, []);
+  }, [role]);
+
+  useEffect(() => {
+    if (role?.toLowerCase() == "admin") {
+      fetchForms();
+    } else {
+      setForms([]);
+      setPage(1);
+    }
+  }, [page, role]);
 
   return (
     <>
       <Header username={username} role={role} />
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center">
         <div className='w-full max-w-lg mt-10'>
-          <Card className='h-[800px] flex flex-col'>
+          <Card className='h-[800px] flex flex-col w-full'>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 justify-center">
                 <BookOpenText className="h-5 w-5 text-blue-500" />
@@ -63,19 +121,23 @@ export function Admin() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className='flex flex-col flex-1 items-center'>
+            <CardContent className='flex flex-col flex-1 items-center w-full'>
               <div className='flex flex-wrap gap-4 justify-center'>
-                <Input placeholder="Key term" onChange={(value) => {
-
+                <Input placeholder="Key term" onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setPage(1);
                 }}/>
                 <Combobox options={categoryOptions} placeholder="Category" onChange={(value) => {
-
+                  setCategory(value as FormCategory | null);
+                  setPage(1);
                 }}/>
                 <Combobox options={urgencyOptions} placeholder="Urgency" onChange={(value) => {
-
+                  setUrgency(value as FormUrgency | null);
+                  setPage(1);
                 }}/>
                 <Combobox options={formStateOptions} placeholder="State" onChange={(value) => {
-
+                  setFormState(value as FormState | null);
+                  setPage(1);
                 }}/>
                 
               </div>
