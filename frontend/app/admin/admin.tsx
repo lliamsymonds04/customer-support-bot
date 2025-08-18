@@ -24,8 +24,12 @@ export function Admin() {
   const [category, setCategory] = useState<FormCategory | null>(null);
   const [formState, setFormState] = useState<FormState | null>(null);
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
   const [page, setPage] = useState(1);
   const moreFormsExist = useRef(true);
+  const fetchingForms = useRef(false);
+  
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
 
   //combobox options
@@ -39,32 +43,38 @@ export function Admin() {
   }
 
   async function fetchForms() {
+    if (fetchingForms.current) return; // Prevent multiple fetches
+    fetchingForms.current = true;
     const apiBase = import.meta.env.VITE_API_URL;
     try {
-        const params = new URLSearchParams();
-        if (urgency !== null && urgency !== undefined) params.append("urgency", String(urgency));
-        if (formState !== null && formState !== undefined) params.append("state", String(formState));
-        if (category !== null && category !== undefined) params.append("category", String(category));
-        if (keyword && keyword.trim().length > 0) params.append("keyword", keyword.trim());
-        params.append("page", String(page));
-        params.append("pageSize", String(pageSize));
+      const params = new URLSearchParams();
+      if (urgency !== null && urgency !== undefined) params.append("urgency", String(urgency));
+      if (formState !== null && formState !== undefined) params.append("state", String(formState));
+      if (category !== null && category !== undefined) params.append("category", String(category));
+      // use debounced keyword to avoid firing requests on every keystroke
+      if (debouncedKeyword && debouncedKeyword.trim().length > 0) params.append("keyword", debouncedKeyword.trim());
+      params.append("page", String(page));
+      params.append("pageSize", String(pageSize));
 
-        const response = await fetch(`${apiBase}/forms/admin?${params.toString()}`, {
-          method: "GET",
-          credentials: "include"
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch forms");
-        }
-        const data = await response.json();
-        console.log("Fetched forms:", data);
-        if (page === 1) {
-          setForms(data);
-        } else {
-          setForms((prevForms) => [...prevForms, ...data]);
-        }
-      } catch (error) {
-        console.error("Error fetching forms:", error);
+      const response = await fetch(`${apiBase}/forms/admin?${params.toString()}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch forms");
+      }
+      const data = await response.json();
+      console.log("Fetched forms:", data);
+      moreFormsExist.current = data.length === pageSize;
+      if (page === 1) {
+        setForms(data);
+      } else {
+        setForms((prevForms) => [...prevForms, ...data]);
+      }
+    } catch (error) {
+      console.error("Error fetching forms:", error);
+    } finally {
+      fetchingForms.current = false;
     }
   }
 
@@ -106,7 +116,47 @@ export function Admin() {
       setForms([]);
       setPage(1);
     }
-  }, [page, role]);
+  }, [page, role, debouncedKeyword, category, urgency, formState]);
+
+  useEffect(() => {
+    if (!bottomRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && moreFormsExist.current && !fetchingForms.current) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      },
+      {
+        root: null, // viewport
+        rootMargin: "100px", // start loading a bit before it's fully in view
+        threshold: 0,
+      }
+    );
+
+    observer.observe(bottomRef.current);
+
+    return () => {
+      if (bottomRef.current) observer.unobserve(bottomRef.current);
+    };
+  }, [bottomRef.current]);
+
+  // debounce the keyword input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(handler);
+  }, [keyword]);
+
+  // when the debounced keyword changes, reset to page 1 and fetch
+  useEffect(() => {
+    if (role?.toLowerCase() === "admin") {
+      setPage(1);
+      fetchForms();
+    }
+  }, [debouncedKeyword]);
 
   return (
     <>
@@ -123,9 +173,9 @@ export function Admin() {
 
             <CardContent className='flex flex-col flex-1 items-center w-full'>
               <div className='flex flex-wrap gap-4 justify-center'>
-                <Input placeholder="Key term" onChange={(e) => {
+                <Input placeholder="Key term" value={keyword} onChange={(e: any) => {
+                  // only update raw keyword here; fetch will happen after debounce
                   setKeyword(e.target.value);
-                  setPage(1);
                 }}/>
                 <Combobox options={categoryOptions} placeholder="Category" onChange={(value) => {
                   setCategory(value as FormCategory | null);
@@ -159,7 +209,7 @@ export function Admin() {
                   </div>
                 )}
 
-                {/* <div ref={formsEndRef} className="h-1" /> */}
+                <div ref={bottomRef} className="h-1" />
               </ScrollArea>
             </CardContent>
           </Card>
