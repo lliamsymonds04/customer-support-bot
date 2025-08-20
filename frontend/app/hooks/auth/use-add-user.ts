@@ -11,7 +11,7 @@ export function useAddUser({username, sessionId}: useAddUserProps) {
             // Logic to add user to the session
             async function addUserToSession() {
                 try {
-                    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/add-user`, {
+                    const response = await fetch(`${import.meta.env.VITE_API_URL}/session/add-user`, {
                         method: "POST",
                         credentials: "include",
                     })

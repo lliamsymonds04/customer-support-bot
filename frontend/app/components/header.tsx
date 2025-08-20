@@ -1,4 +1,4 @@
-import { Sparkles, User} from 'lucide-react'
+import { Sparkles, User, House } from 'lucide-react'
 import { Button } from '@components/ui/button';
 import { Link, useLocation } from "react-router";
 
@@ -10,6 +10,7 @@ interface HeaderProps {
 export function Header({username, role}: HeaderProps) {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith("/admin");
+  const isHomePage = location.pathname === "/";
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -54,6 +55,8 @@ export function Header({username, role}: HeaderProps) {
                   </Button>
                 </Link>
               )}
+              
+
               <Link to="/auth/logout">
                 <Button
                   variant="outline"
@@ -62,6 +65,17 @@ export function Header({username, role}: HeaderProps) {
                   <span>Logout</span>
                 </Button>
               </Link>
+
+              {!isHomePage && (
+                <Link to="/" className='ml-4'>
+                  <Button
+                    variant="outline"
+                    className="flex items-center space-x-2 bg-transparent cursor-pointer mr-4"
+                  >
+                    <House className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
         </div>
