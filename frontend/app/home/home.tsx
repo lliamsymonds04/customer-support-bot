@@ -18,6 +18,7 @@ import { useSessionId } from '~/hooks/auth/use-session-id';
 import { useFormsHub } from '~/hooks/forms/use-forms-hub';
 import { useAutoScroll } from '~/hooks/util/use-autoscroll';
 import { useUser } from '~/hooks/auth/use-user';
+import { useAddUser } from '~/hooks/auth/use-add-user';
 
 export function Home() {
   const { error, setErrorMessage } = useError(3000);
@@ -34,6 +35,9 @@ export function Home() {
   // Auto-scroll to bottom when messages change or when processing
   useAutoScroll(messagesEndRef, [messages, isProcessing])
   useAutoScroll(formsEndRef, [forms]);
+
+  // Add user to session
+  useAddUser({ username, sessionId });
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
