@@ -1,6 +1,7 @@
 import type { Form } from "@/types/Form"
-import { FormCategory, FormUrgency } from "@/types/Form";
-import { Card, CardTitle, CardContent, CardHeader } from "~/components/ui/card";
+import { FormCategory, FormUrgency, FormState } from "@/types/Form";
+import { Card, CardContent } from "~/components/ui/card";
+import { Combobox, ConvertEnumToOptions } from "./ui/combobox";
 
 
 const urgencyColorMap: Record<FormUrgency, string> = {
@@ -10,7 +11,37 @@ const urgencyColorMap: Record<FormUrgency, string> = {
     [FormUrgency.Critical]: "purple",
 };
 
-export function FormPreview({ form }: { form: Form }) {
+
+interface FormPreviewProps {
+    form: Form;
+    role: string | null;
+}
+
+export function FormPreview({ form, role }: FormPreviewProps) {
+
+  const FormStateOptions = ConvertEnumToOptions(FormState, "");
+
+  async function updateFormState(newState: string) {
+    try {
+      form.state = newState as FormState; // Update the form state locally
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/forms/${form.id}/state`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newState),
+        credentials: "include"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update form state");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  }
   return (
     <Card>
         <CardContent>
@@ -26,8 +57,13 @@ export function FormPreview({ form }: { form: Form }) {
                     <span className="font-semibold">Date: </span>
                     {form.createdAt ? new Date(form.createdAt).toLocaleString() : "N/A"}
                 </p>
+                
             </div>
-            
+            {role === "Admin" && (
+              <div className="w-48 mt-4">
+                <Combobox options={FormStateOptions} onChange={updateFormState} placeholder={form.state} />
+              </div>
+            )}
         </CardContent>
     </Card>
   );

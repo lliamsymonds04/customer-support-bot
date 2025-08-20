@@ -64,7 +64,6 @@ export function Admin() {
         throw new Error("Failed to fetch forms");
       }
       const data = await response.json();
-      console.log("Fetched forms:", data);
       moreFormsExist.current = data.length === pageSize;
       if (page === 1) {
         setForms(data);
@@ -204,7 +203,7 @@ export function Admin() {
                 ) : (
                   <div className="space-y-6">
                     {forms.map((form) => (
-                      <FormPreview key={form.id} form={form} />
+                      <FormPreview key={form.id} form={form} role={role} />
                     ))}
                   </div>
                 )}

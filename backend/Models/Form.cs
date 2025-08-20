@@ -21,7 +21,7 @@ public enum FormUrgency
 public enum FormState
 {
     Open,
-    InProgress,
+    Pending,
     Closed,
 }
 

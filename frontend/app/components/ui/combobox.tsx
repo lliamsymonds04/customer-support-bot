@@ -87,15 +87,15 @@ export function Combobox({ options, placeholder = "Select option...", onChange }
     );
 }
 
-export function ConvertEnumToOptions<T extends object>(enumObj: T, noneConfig: string): ComboboxOption[] {
-    // Use useMemo to memoize the conversion
+export function ConvertEnumToOptions<T extends object>(enumObj: T, noneConfig?: string): ComboboxOption[] {
     return useMemo(() => {
-        return Object.entries(enumObj)
-            .filter(([key, value]) => isNaN(Number(key))) // Filter out numeric keys (for reverse-mapped enums)
+        const obj = Object.entries(enumObj)
+            .filter(([key]) => isNaN(Number(key))) // Filter out numeric keys (for reverse-mapped enums)
             .map(([key, value]) => ({
-                value: String(value), // Ensure value is a string
+                value: String(value),
                 label: key,
             }))
-            .concat({ value: "", label: noneConfig });
-    }, [enumObj, noneConfig]);
+
+        return noneConfig ? [...obj, { value: "", label: noneConfig }] : obj;
+    }, [enumObj, noneConfig])
 }

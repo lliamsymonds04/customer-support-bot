@@ -19,7 +19,7 @@ export enum FormUrgency
 export enum FormState
 {
     Open = "Open",
-    InProgress = "In Progress",
+    Pending = "Pending",
     Closed = "Closed",
 }
 
@@ -30,6 +30,7 @@ export interface Form
     description: string;
     category: FormCategory;
     urgency: FormUrgency;
+    state: FormState;
     createdAt: Date;
     username?: string;
 }

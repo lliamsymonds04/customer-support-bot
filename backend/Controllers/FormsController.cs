@@ -33,4 +33,21 @@ public class FormsController : ControllerBase
         var formDtos = _formService.FormsToDtos(forms);
         return Ok(formDtos);
     }
+
+    [HttpPut("{formId}/state")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateFormState(int formId, [FromBody] FormState newState)
+    {
+        Console.WriteLine($"Updating form {formId} to state {newState}");
+        try
+        {
+            Console.WriteLine("Testing");
+            await _formService.UpdateFormStateAsync(formId, newState);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

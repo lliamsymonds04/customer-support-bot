@@ -157,7 +157,7 @@ export function Home() {
                 ) : (
                   <div className="space-y-6">
                     {forms.map((form) => (
-                      <FormPreview key={form.id} form={form} />
+                      <FormPreview key={form.id} form={form} role={role} />
                     ))}
                   </div>
                 )}

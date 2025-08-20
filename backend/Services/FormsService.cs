@@ -20,6 +20,7 @@ public interface IFormsService
     Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize);
     FormDto FormToDto(Form form);
     FormDto[] FormsToDtos(IEnumerable<Form> forms);
+    Task UpdateFormStateAsync(int formId, FormState newState);
 }
 
 public class FormsService : IFormsService
@@ -155,5 +156,18 @@ public class FormsService : IFormsService
         if (forms == null) throw new ArgumentNullException(nameof(forms));
 
         return forms.Select(FormToDto).ToArray();
+    }
+
+    public async Task UpdateFormStateAsync(int formId, FormState newState)
+    {
+        var form = await _dbContext.Forms.FindAsync(formId);
+        if (form == null)
+        {
+            throw new KeyNotFoundException($"Form with ID {formId} not found.");
+        }
+
+        form.State = newState;
+        _dbContext.Forms.Update(form);
+        await _dbContext.SaveChangesAsync();
     }
 }
