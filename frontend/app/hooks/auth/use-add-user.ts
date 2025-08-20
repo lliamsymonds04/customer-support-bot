@@ -13,12 +13,18 @@ export function useAddUser({username, sessionId}: useAddUserProps) {
                 try {
                     const response = await fetch(`${import.meta.env.VITE_API_URL}/session/add-user`, {
                         method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(sessionId),
                         credentials: "include",
                     })
 
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
                     }
+
+                    console.log("User added to session successfully");
                 } catch {
                     console.error("Error adding user to session");
                 }
