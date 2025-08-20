@@ -30,6 +30,7 @@ public class FormsController : ControllerBase
     public async Task<IActionResult> GetFormsForAdmin(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page = 1, int pageSize = 10)
     {
         var forms = await _formService.GetFormsByCriteriaAsync(urgency, state, category, keyword, page, pageSize);
-        return Ok(forms);
+        var formDtos = _formService.FormsToDtos(forms);
+        return Ok(formDtos);
     }
 }

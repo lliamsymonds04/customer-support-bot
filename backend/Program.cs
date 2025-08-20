@@ -4,12 +4,17 @@ using SupportBot.Skills;
 using SupportBot.Data;
 using SupportBot.Services;
 using SupportBot.Hubs;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+  .AddJsonOptions(opts =>
+  {
+    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+  });
 
 // add Redis
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -107,6 +112,8 @@ builder.Services.AddCors(options =>
 
 // Add SignalR
 builder.Services.AddSignalR();
+
+
 
 var app = builder.Build();
 

@@ -31,4 +31,5 @@ export interface Form
     category: FormCategory;
     urgency: FormUrgency;
     createdAt: Date;
+    username?: string;
 }

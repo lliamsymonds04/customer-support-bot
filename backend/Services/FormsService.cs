@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SupportBot.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using SupportBot.Dtos;
 
 namespace SupportBot.Services;
 
@@ -17,6 +18,8 @@ public interface IFormsService
     Task<List<Form>> GetFormsByIdsAsync(int[] formIds);
     Task SendForm(Form form, string sessionId);
     Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize);
+    FormDto FormToDto(Form form);
+    FormDto[] FormsToDtos(IEnumerable<Form> forms);
 }
 
 public class FormsService : IFormsService
@@ -96,8 +99,9 @@ public class FormsService : IFormsService
 
     public async Task SendForm(Form form, string sessionId)
     {
-        await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", form);
-        await _adminHub.Clients.Group("Admins").SendAsync("AdminReceiveForm", form);
+        var formDto = FormToDto(form);
+        await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", formDto);
+        await _adminHub.Clients.All.SendAsync("AdminReceiveForm", formDto);
     }
 
     public async Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize)
@@ -128,5 +132,28 @@ public class FormsService : IFormsService
         query = query.OrderByDescending(f => f.CreatedAt);
 
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync();
+    }
+
+    public FormDto FormToDto(Form form)
+    {
+        if (form == null) throw new ArgumentNullException(nameof(form));
+
+        return new FormDto
+        {
+            Id = form.Id,
+            Description = form.Description,
+            Category = form.Category.ToString(),
+            Urgency = form.Urgency.ToString(),
+            State = form.State.ToString(),
+            CreatedAt = form.CreatedAt,
+            Username = form.User?.Username
+        };
+    }
+
+    public FormDto[] FormsToDtos(IEnumerable<Form> forms)
+    {
+        if (forms == null) throw new ArgumentNullException(nameof(forms));
+
+        return forms.Select(FormToDto).ToArray();
     }
 }
