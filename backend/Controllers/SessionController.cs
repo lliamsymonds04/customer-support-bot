@@ -42,16 +42,10 @@ public class SessionController : ControllerBase
         return Ok();
     }
 
-    public class UserAddClass
+    [HttpPost("add-user")]
+    public async Task<IActionResult> AddUserToSession([FromBody] string sessionId)
     {
-        public required string SessionId { get; set; }
-        public required string Username { get; set; }
-    }
-
-    [HttpPost("/add-user")]
-    public async Task<IActionResult> AddUserToSession([FromBody] UserAddClass userAdd)
-    {
-        var session = await _sessionManager.GetOrCreateSessionAsync(userAdd.SessionId);
+        var session = await _sessionManager.GetOrCreateSessionAsync(sessionId);
         var token = _authService.GetUserJwtToken();
         var userId = _authService.GetUserIdByJwt(token);
         await _sessionManager.AddUserToSession(session, userId);
