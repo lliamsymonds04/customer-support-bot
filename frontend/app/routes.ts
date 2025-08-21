@@ -9,6 +9,7 @@ export default [
             route("login", "routes/auth/login.tsx"),
             route("signup", "routes/auth/signup.tsx"),
             route("logout", "routes/auth/logout.tsx"),
+            route("oauth", "routes/auth/oauth.tsx")
         ]),
     ])
 

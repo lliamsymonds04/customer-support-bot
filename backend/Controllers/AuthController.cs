@@ -46,6 +46,10 @@ public class AuthController : ControllerBase
         }
 
         // hash the incoming password and compare it with the stored hash
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            return Unauthorized("Invalid username or password.");
+        }
         var result = _passwordHasher.VerifyHashedPassword(request.Username, user.PasswordHash, request.Password);
 
         if (result == PasswordVerificationResult.Failed)
@@ -169,6 +173,23 @@ public class AuthController : ControllerBase
         return Unauthorized("User is not authenticated.");
     }
 
+    [HttpGet("role")]
+    public IActionResult GetUserRole()
+    {
+        var token = _authService.GetUserJwtToken();
+        var userId = _authService.GetUserIdByJwt(token);
+        var user = _context.Users.Find(userId);
+        if (user != null)
+        {
+            return Ok(new
+            {
+                role = user.Role,
+            });
+        }
+
+        return Unauthorized("User is not authenticated.");
+    }
+
     private string HandleToken(User user, TokenType tokenType)
     {
         var token = _authService.GenerateJwtToken(user, tokenType == TokenType.RefreshToken);
@@ -193,5 +214,46 @@ public class AuthController : ControllerBase
         Response.Cookies.Append(cookieName, token, cookieOptions);
 
         return token;
+    }
+
+    [HttpGet("github/login")]
+    public IActionResult GitHubLogin()
+    {
+
+        var redirectUri = _configuration["Auth:GitHub:RedirectUri"];
+        var authorizationUrl = $"https://github.com/login/oauth/authorize?client_id={_configuration["GitHub:ClientId"]}&redirect_uri={redirectUri}";
+        return Redirect(authorizationUrl);
+    }
+
+    [HttpGet("github/callback")]
+    public async Task<IActionResult> GitHubCallback(string code)
+    {
+        var user = await _authService.ExchangeGitHubCode(code);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        HandleToken(user, TokenType.AuthToken);
+        HandleToken(user, TokenType.RefreshToken);
+
+        Console.WriteLine($"User {user.Username} authenticated via GitHub.");
+        var frontendUrl = _configuration["Frontend:OAuthRedirect"];
+        if (!string.IsNullOrEmpty(frontendUrl))
+        {
+            //add role to query params
+            var queryParams = new Dictionary<string, string>
+            {
+                { "role", user.Role.ToString() },
+                { "username", user.Username }
+            };
+            var uriBuilder = new UriBuilder(frontendUrl)
+            {
+                Query = await new FormUrlEncodedContent(queryParams).ReadAsStringAsync()
+            };
+            return Redirect(uriBuilder.ToString());
+        }
+
+        return Redirect("/");
     }
 }
