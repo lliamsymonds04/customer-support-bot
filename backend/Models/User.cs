@@ -10,10 +10,12 @@ public class User
 {
     public int Id { get; set; }
     public string? GithubId { get; set; }
+    public string? GoogleId { get; set; }
     public required string Username { get; set; }
+    public string? Email { get; set; }
     public string? PasswordHash { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public Roles Role { get; set; } = Roles.User; // Default role is 'User'string
+    public Roles Role { get; set; } = Roles.User; // Default role is 'User'
     
     public ICollection<Form> Forms { get; set; } = new List<Form>();
 }

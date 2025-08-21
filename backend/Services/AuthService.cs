@@ -16,6 +16,7 @@ public interface IAuthService
     int GetUserIdByJwt(string token);
     string GetUserJwtToken();
     Task<User?> ExchangeGitHubCode(string code);
+    Task<User?> ExchangeGoogleCode(string code);
 }
 
 public class AuthService : IAuthService
@@ -216,6 +217,97 @@ public class AuthService : IAuthService
             {
                 GithubId = githubId.ToString(),
                 Username = username
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+        }
+
+        return user;
+    }
+
+    public async Task<User?> ExchangeGoogleCode(string code)
+    {
+        var clientId = _configuration["Google:ClientId"];
+        var clientSecret = _configuration["Google:ClientSecret"];
+        var redirectUri = _configuration["Auth:Google:RedirectUri"];
+
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+        {
+            throw new InvalidOperationException("Google Client ID and Client Secret are not configured.");
+        }
+
+        if (string.IsNullOrEmpty(redirectUri))
+        {
+            throw new InvalidOperationException("Google Redirect URI is not configured.");
+        }
+
+        using var httpClient = new HttpClient();
+        
+        // Exchange code for access token
+        var tokenRequest = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("client_id", clientId),
+            new KeyValuePair<string, string>("client_secret", clientSecret),
+            new KeyValuePair<string, string>("code", code),
+            new KeyValuePair<string, string>("grant_type", "authorization_code"),
+            new KeyValuePair<string, string>("redirect_uri", redirectUri)
+        });
+
+        var tokenResponse = await httpClient.PostAsync("https://oauth2.googleapis.com/token", tokenRequest);
+        var tokenContent = await tokenResponse.Content.ReadAsStringAsync();
+
+        if (!tokenResponse.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"Failed to exchange Google code: {tokenContent}");
+        }
+
+        var tokenJson = JsonDocument.Parse(tokenContent);
+        var accessToken = tokenJson.RootElement.GetProperty("access_token").GetString();
+
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return null;
+        }
+
+        // Get user info from Google
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        var userResponse = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        var userContent = await userResponse.Content.ReadAsStringAsync();
+
+        if (!userResponse.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"Failed to get Google user info: {userContent}");
+        }
+
+        var userJson = JsonDocument.Parse(userContent);
+        var googleId = userJson.RootElement.GetProperty("id").GetString();
+        var email = userJson.RootElement.GetProperty("email").GetString();
+        var name = userJson.RootElement.GetProperty("name").GetString();
+
+        if (string.IsNullOrEmpty(googleId) || string.IsNullOrEmpty(email))
+        {
+            return null;
+        }
+
+        // Check if user already exists by Google ID
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId);
+        if (user == null)
+        {
+            // Create new user with email as username (or name if email is not suitable)
+            var username = email.Split('@')[0]; // Use part before @ as username
+            
+            // Ensure username is unique
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (existingUser != null)
+            {
+                username = $"{username}_{googleId.Substring(0, 6)}"; // Make it unique
+            }
+
+            user = new User
+            {
+                GoogleId = googleId,
+                Username = username,
+                Email = email
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();

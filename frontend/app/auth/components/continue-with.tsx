@@ -6,8 +6,9 @@ type ContinueWithProps = {
 }
 
 export default function ContinueWith({isLoading}: ContinueWithProps) {
-  async function handleSocialLogin(provider: string) {
-    // Handle social login logic here
+
+  async function handleGoogleLogin() {
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google/login`;
   }
 
   async function handleGitHubLogin() {
@@ -28,7 +29,7 @@ export default function ContinueWith({isLoading}: ContinueWithProps) {
       <div className="grid grid-cols-2 gap-4">
         <Button
           variant="outline"
-          onClick={() => handleSocialLogin('Google')}
+          onClick={handleGoogleLogin}
           disabled={isLoading}
           className="w-full cursor-pointer"
         >

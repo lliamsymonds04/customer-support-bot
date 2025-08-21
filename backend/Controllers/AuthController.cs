@@ -256,4 +256,46 @@ public class AuthController : ControllerBase
 
         return Redirect("/");
     }
+
+    [HttpGet("google/login")]
+    public IActionResult GoogleLogin()
+    {
+        var redirectUri = _configuration["Auth:Google:RedirectUri"];
+        var clientId = _configuration["Google:ClientId"];
+        var scope = "openid email profile";
+        var authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&scope={scope}&response_type=code";
+        return Redirect(authorizationUrl);
+    }
+
+    [HttpGet("google/callback")]
+    public async Task<IActionResult> GoogleCallback(string code)
+    {
+        var user = await _authService.ExchangeGoogleCode(code);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        HandleToken(user, TokenType.AuthToken);
+        HandleToken(user, TokenType.RefreshToken);
+
+        Console.WriteLine($"User {user.Username} authenticated via Google.");
+        var frontendUrl = _configuration["Frontend:OAuthRedirect"];
+        if (!string.IsNullOrEmpty(frontendUrl))
+        {
+            //add role to query params
+            var queryParams = new Dictionary<string, string>
+            {
+                { "role", user.Role.ToString() },
+                { "username", user.Username }
+            };
+            var uriBuilder = new UriBuilder(frontendUrl)
+            {
+                Query = await new FormUrlEncodedContent(queryParams).ReadAsStringAsync()
+            };
+            return Redirect(uriBuilder.ToString());
+        }
+
+        return Redirect("/");
+    }
 }
