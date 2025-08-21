@@ -149,8 +149,8 @@ export function Login() {
 						
 						<div className="text-xs text-center text-gray-500">
 							<p className="mb-2">Demo credentials:</p>
-							<p>Email: demo@example.com</p>
-							<p>Password: password</p>
+							<p>Username: DemoAdmin</p>
+							<p>Password: Testing</p>
 						</div>
 				</CardFooter>
 			</>

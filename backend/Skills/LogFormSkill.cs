@@ -41,6 +41,10 @@ public class LogFormSkill
                 // Handle token parsing errors
                 Console.WriteLine($"Error parsing JWT: {ex.Message}");
             }
+            if (userId != null)
+            {
+                Console.WriteLine($"User {userId} submitted a form.");
+            }
 
             var form = new Form
             {
