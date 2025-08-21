@@ -17,9 +17,10 @@ public interface IFormsService
     Task<Form?> GetFormFromIdAsync(int formId);
     Task<List<Form>> GetFormsByIdsAsync(int[] formIds);
     Task SendForm(Form form, string sessionId);
-    Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize);
-    FormDto FormToDto(Form form);
-    FormDto[] FormsToDtos(IEnumerable<Form> forms);
+    Task<FormDto[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize);
+    Task<FormDto> FormToDto(Form form);
+    Task<FormDto[]> FormsToDtos(IEnumerable<Form> forms);
+    Task<FormDto[]> GetFormDtosAsync(IEnumerable<int> formIds);
     Task UpdateFormStateAsync(int formId, FormState newState);
 }
 
@@ -105,7 +106,7 @@ public class FormsService : IFormsService
         await _adminHub.Clients.All.SendAsync("AdminReceiveForm", formDto);
     }
 
-    public async Task<Form[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize)
+    public async Task<FormDto[]> GetFormsByCriteriaAsync(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page, int pageSize)
     {
         var query = _dbContext.Forms.AsQueryable();
 
@@ -132,30 +133,80 @@ public class FormsService : IFormsService
         // sort by most recent
         query = query.OrderByDescending(f => f.CreatedAt);
 
-        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync();
+        return await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(f => new FormDto
+            {
+                Id = f.Id,
+                Description = f.Description,
+                Category = f.Category.ToString(),
+                Urgency = f.Urgency.ToString(),
+                State = f.State.ToString(),
+                CreatedAt = f.CreatedAt,
+                Username = f.User != null ? f.User.Username : null
+            })
+            .ToArrayAsync();
     }
 
-    public FormDto FormToDto(Form form)
+    public async Task<FormDto> FormToDto(Form form)
     {
         if (form == null) throw new ArgumentNullException(nameof(form));
 
-        return new FormDto
-        {
-            Id = form.Id,
-            Description = form.Description,
-            Category = form.Category.ToString(),
-            Urgency = form.Urgency.ToString(),
-            State = form.State.ToString(),
-            CreatedAt = form.CreatedAt,
-            Username = form.User?.Username
-        };
+        var dto = await _dbContext.Forms
+            .Where(f => f.Id == form.Id)
+            .Select(f => new FormDto
+            {
+                Id = f.Id,
+                Description = f.Description,
+                Category = f.Category.ToString(),
+                Urgency = f.Urgency.ToString(),
+                State = f.State.ToString(),
+                CreatedAt = f.CreatedAt,
+                Username = f.User != null ? f.User.Username : null
+            })
+            .FirstOrDefaultAsync();
+        return dto!;
     }
 
-    public FormDto[] FormsToDtos(IEnumerable<Form> forms)
+    public async Task<FormDto[]> FormsToDtos(IEnumerable<Form> forms)
     {
         if (forms == null) throw new ArgumentNullException(nameof(forms));
 
-        return forms.Select(FormToDto).ToArray();
+        var formIds = forms.Select(f => f.Id).ToArray();
+        
+        var dtos = await _dbContext.Forms
+            .Where(f => formIds.Contains(f.Id))
+            .Select(f => new FormDto
+            {
+                Id = f.Id,
+                Description = f.Description,
+                Category = f.Category.ToString(),
+                Urgency = f.Urgency.ToString(),
+                State = f.State.ToString(),
+                CreatedAt = f.CreatedAt,
+                Username = f.User != null ? f.User.Username : null
+            })
+            .ToArrayAsync();
+            
+        return dtos;
+    }
+
+    public async Task<FormDto[]> GetFormDtosAsync(IEnumerable<int> formIds)
+    {
+        return await _dbContext.Forms
+            .Where(f => formIds.Contains(f.Id))
+            .Select(f => new FormDto
+            {
+                Id = f.Id,
+                Description = f.Description,
+                Category = f.Category.ToString(),
+                Urgency = f.Urgency.ToString(),
+                State = f.State.ToString(),
+                CreatedAt = f.CreatedAt,
+                Username = f.User != null ? f.User.Username : null
+            })
+            .ToArrayAsync();
     }
 
     public async Task UpdateFormStateAsync(int formId, FormState newState)

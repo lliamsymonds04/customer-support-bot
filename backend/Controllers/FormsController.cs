@@ -20,9 +20,9 @@ public class FormsController : ControllerBase
     public async Task<IActionResult> GetFormsForSession(string sessionId)
     {
         var formIds = await _formService.GetSessionFormIdsAsync(sessionId);
-        var forms = await _formService.GetFormsByIdsAsync(formIds);
+        var formDtos = await _formService.GetFormDtosAsync(formIds);
 
-        return Ok(forms);
+        return Ok(formDtos);
     }
 
     [HttpGet("admin")]
@@ -30,8 +30,8 @@ public class FormsController : ControllerBase
     public async Task<IActionResult> GetFormsForAdmin(FormUrgency? urgency, FormState? state, FormCategory? category, string? keyword, int page = 1, int pageSize = 10)
     {
         var forms = await _formService.GetFormsByCriteriaAsync(urgency, state, category, keyword, page, pageSize);
-        var formDtos = _formService.FormsToDtos(forms);
-        return Ok(formDtos);
+        // var formDtos = await _formService.FormsToDtos(forms);
+        return Ok(forms);
     }
 
     [HttpPut("{formId}/state")]

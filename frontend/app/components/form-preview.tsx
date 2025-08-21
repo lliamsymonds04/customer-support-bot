@@ -18,7 +18,6 @@ interface FormPreviewProps {
 }
 
 export function FormPreview({ form, role }: FormPreviewProps) {
-
   const FormStateOptions = ConvertEnumToOptions(FormState, "");
 
   async function updateFormState(newState: string) {
@@ -42,6 +41,7 @@ export function FormPreview({ form, role }: FormPreviewProps) {
       }
     }
   }
+
   return (
     <Card>
         <CardContent>
@@ -57,6 +57,12 @@ export function FormPreview({ form, role }: FormPreviewProps) {
                     <span className="font-semibold">Date: </span>
                     {form.createdAt ? new Date(form.createdAt).toLocaleString() : "N/A"}
                 </p>
+                { form.username && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    <span className="font-semibold">Submitted by: </span>
+                    {form.username}
+                  </p>
+                )}
                 
             </div>
             {role === "Admin" && (
