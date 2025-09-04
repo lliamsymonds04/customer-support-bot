@@ -17,9 +17,24 @@ builder.Services.AddControllers()
   });
 
 // add Redis
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+var redisPassword = builder.Configuration["Redis:Password"];
+
+var redisOptions = new StackExchange.Redis.ConfigurationOptions
+{
+    EndPoints = { redisConnectionString },
+    AbortOnConnectFail = false,
+};
+
+if (!string.IsNullOrEmpty(redisPassword))
+{
+    redisOptions.Password = redisPassword;
+    redisOptions.Ssl = true;
+    redisOptions.User = "default"; 
+}
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.ConfigurationOptions = redisOptions;
 });
 
 
