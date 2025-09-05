@@ -7,6 +7,7 @@ using SupportBot.Hubs;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+var isLocal = builder.Environment.IsDevelopment();
 
 // Add services to the container.
 builder.Services.AddOpenApi();
@@ -20,16 +21,18 @@ builder.Services.AddControllers()
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 var redisPassword = builder.Configuration["Redis:Password"];
 
-var redisOptions = new StackExchange.Redis.ConfigurationOptions
-{
-    EndPoints = { redisConnectionString },
-    AbortOnConnectFail = false,
-};
+// var redisOptions = new StackExchange.Redis.ConfigurationOptions
+// {
+//     EndPoints = { redisConnectionString },
+//     AbortOnConnectFail = false,
+// };
+var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConnectionString);
+redisOptions.AbortOnConnectFail = false;
 
 if (!string.IsNullOrEmpty(redisPassword))
 {
     redisOptions.Password = redisPassword;
-    redisOptions.Ssl = true;
+    // redisOptions.Ssl = true;
     redisOptions.User = "default"; 
 }
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -127,7 +130,10 @@ builder.Services.AddCors(options =>
 
 // Add SignalR
 builder.Services.AddSignalR();
-
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("http://localhost:5000");
+}
 
 
 var app = builder.Build();
