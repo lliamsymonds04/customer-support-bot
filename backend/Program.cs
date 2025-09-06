@@ -55,8 +55,9 @@ else if (connectionString == null)
 }
 
 // Add Db context
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddHttpContextAccessor();
 
