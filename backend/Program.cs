@@ -25,13 +25,16 @@ var redisPassword = builder.Configuration["Redis:Password"];
 var redisOptions = new StackExchange.Redis.ConfigurationOptions
 {
     EndPoints = {redisConnectionString},
-    User = "default",
-    Password = redisPassword,
     Ssl = false,
     AbortOnConnectFail = false,
-    ConnectTimeout = 15000,
     ConnectRetry = 3
 };
+
+if (!string.IsNullOrEmpty(redisPassword))
+{
+    redisOptions.Password = redisPassword;
+    redisOptions.User = "default";
+}
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
