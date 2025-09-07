@@ -80,8 +80,11 @@ export function Admin() {
   useEffect(() => {
     if (role?.toLowerCase() !== "admin") return;
 
-    const apiBase = import.meta.env.VITE_API_URL;
-    const hubBase = apiBase.replace(/\/api\/?$/, "");
+    let hubBase = import.meta.env.VITE_HUB_BASE
+    if (!hubBase) {
+        const apiBase = import.meta.env.VITE_API_URL;
+        hubBase = apiBase.replace(/\/api\/?$/, "");
+    }
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${hubBase}/hubs/admin`, {
