@@ -41,6 +41,7 @@ export function useForms({sessionId, formsConnectionRef, isConnectedToFormsHub}:
         console.log("listening to form webhook")
 
         const handleNewForm = (form: Form) => {
+            console.log("Received form via hub:", form.title);
             setForms((prevForms) => [...prevForms, form]);
         };
 

@@ -102,6 +102,7 @@ public class FormsService : IFormsService
     public async Task SendForm(Form form, string sessionId)
     {
         var formDto = FormToDto(form);
+        Console.WriteLine("Sending form via hub: " + form.Description + " to session: " + sessionId);
         await _formsHub.Clients.Group(sessionId).SendAsync("ReceiveUserForm", formDto);
         await _adminHub.Clients.All.SendAsync("AdminReceiveForm", formDto);
     }

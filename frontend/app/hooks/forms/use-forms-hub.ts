@@ -17,7 +17,9 @@ export function useFormsHub(sessionId: string | null) {
         }
         
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl(`${hubBase}/hubs/forms?sessionId=${encodeURIComponent(sessionId)}`)
+            .withUrl(`${hubBase}/hubs/forms?sessionId=${encodeURIComponent(sessionId)}`, {
+                withCredentials: true
+            })
             .withAutomaticReconnect()
             .build();
 
