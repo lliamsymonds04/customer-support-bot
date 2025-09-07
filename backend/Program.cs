@@ -5,7 +5,6 @@ using SupportBot.Data;
 using SupportBot.Services;
 using SupportBot.Hubs;
 using System.Text.Json.Serialization;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 var isLocal = builder.Environment.IsDevelopment();
@@ -132,6 +131,8 @@ builder.Services.AddCors(options =>
 
 // Add SignalR
 builder.Services.AddSignalR();
+
+// Configure Kestrel to listen on port 5000 in development
 if (builder.Environment.IsDevelopment())
 {
     builder.WebHost.UseUrls("http://localhost:5000");
@@ -139,6 +140,25 @@ if (builder.Environment.IsDevelopment())
 
 
 var app = builder.Build();
+
+// Custom middleware to ensure CORS headers on all /hubs responses
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (context.Request.Path.StartsWithSegments("/hubs"))
+        {
+            context.Response.Headers["Access-Control-Allow-Origin"] = allowedOrigins.First();
+            context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+
+            // Optional: expose headers for SignalR negotiation
+            context.Response.Headers["Access-Control-Expose-Headers"] = "WWW-Authenticate";
+        }
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
 
 // Cors
 app.UseCors("AllowFrontEnd");
