@@ -141,26 +141,6 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-// Custom middleware to ensure CORS headers on all /hubs responses
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == HttpMethods.Options && context.Request.Path.StartsWithSegments("/hubs"))
-    {
-        context.Response.StatusCode = StatusCodes.Status204NoContent;
-
-        context.Response.Headers["Access-Control-Allow-Origin"] = allowedOrigins.First();
-        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
-        context.Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
-        context.Response.Headers["Access-Control-Allow-Headers"] = "authorization,content-type,x-requested-with,x-signalr-user-agent";
-        context.Response.Headers["Access-Control-Expose-Headers"] = "WWW-Authenticate";
-
-        await context.Response.CompleteAsync();
-        return; // skip the rest of the pipeline
-    }
-
-    await next();
-});
-
 // Cors
 app.UseCors("AllowFrontEnd");
 
