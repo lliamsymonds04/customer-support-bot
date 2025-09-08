@@ -144,18 +144,19 @@ var app = builder.Build();
 // Custom middleware to ensure CORS headers on all /hubs responses
 app.Use(async (context, next) =>
 {
-    context.Response.OnStarting(() =>
+    if (context.Request.Method == HttpMethods.Options && context.Request.Path.StartsWithSegments("/hubs"))
     {
-        if (context.Request.Path.StartsWithSegments("/hubs"))
-        {
-            context.Response.Headers["Access-Control-Allow-Origin"] = allowedOrigins.First();
-            context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+        context.Response.StatusCode = StatusCodes.Status204NoContent;
 
-            // Optional: expose headers for SignalR negotiation
-            context.Response.Headers["Access-Control-Expose-Headers"] = "WWW-Authenticate";
-        }
-        return Task.CompletedTask;
-    });
+        context.Response.Headers["Access-Control-Allow-Origin"] = allowedOrigins.First();
+        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+        context.Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "authorization,content-type,x-requested-with,x-signalr-user-agent";
+        context.Response.Headers["Access-Control-Expose-Headers"] = "WWW-Authenticate";
+
+        await context.Response.CompleteAsync();
+        return; // skip the rest of the pipeline
+    }
 
     await next();
 });
