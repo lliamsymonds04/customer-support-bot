@@ -8,8 +8,6 @@ export function useFormsHub(sessionId: string | null) {
     useEffect(() => {
         if (!sessionId) return;
 
-        // const apiBase = import.meta.env.VITE_API_URL;
-        // const hubBase = apiBase.replace(/\/api\/?$/, "");
         let hubBase = import.meta.env.VITE_HUB_BASE
         if (!hubBase) {
             const apiBase = import.meta.env.VITE_API_URL;
@@ -18,7 +16,8 @@ export function useFormsHub(sessionId: string | null) {
         
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(`${hubBase}/hubs/forms?sessionId=${encodeURIComponent(sessionId)}`, {
-                withCredentials: true
+                withCredentials: true,
+                transport: signalR.HttpTransportType.LongPolling
             })
             .withAutomaticReconnect()
             .build();
