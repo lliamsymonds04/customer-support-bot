@@ -1,0 +1,49 @@
+name: Deploy Backend to Elastic Beanstalk
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore ./backend
+    
+    - name: Build
+      run: dotnet build ./backend --no-restore --configuration Release
+    
+    - name: Publish
+      run: dotnet publish ./backend -c Release -r linux-x64 --self-contained false -o ./publish
+    
+    - name: Create Procfile
+      run: |
+        echo "web: dotnet backend.dll --urls http://0.0.0.0:5000" > ./publish/Procfile
+    
+    - name: Create deployment package
+      run: |
+        cd ./publish
+        zip -r ../app.zip .
+    
+    - name: Deploy to Elastic Beanstalk
+      uses: einaregilsson/beanstalk-deploy@v22
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: customer-support-bot
+        environment_name: customer-support-bot-env
+        region: ap-southeast-2
+        version_label: ${{ github.sha }}
+        deployment_package: app.zip
