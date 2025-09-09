@@ -225,6 +225,14 @@ public class AuthController : ControllerBase
         return Redirect(authorizationUrl);
     }
 
+    private string GetOauthRedirectUri()
+    {
+        var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:5173";
+        var redirectUri = _configuration["Frontend:OAuthRedirectUri"] ?? "/";
+        // Join the base URL and the redirect URI
+        return new Uri(new Uri(baseUrl), redirectUri).ToString();
+    }
+
     [HttpGet("github/callback")]
     public async Task<IActionResult> GitHubCallback(string code)
     {
@@ -238,8 +246,8 @@ public class AuthController : ControllerBase
         HandleToken(user, TokenType.RefreshToken);
 
         Console.WriteLine($"User {user.Username} authenticated via GitHub.");
-        var frontendUrl = _configuration["Frontend:OAuthRedirect"];
-        if (!string.IsNullOrEmpty(frontendUrl))
+        var redirectUri = GetOauthRedirectUri();
+        if (!string.IsNullOrEmpty(redirectUri))
         {
             //add role to query params
             var queryParams = new Dictionary<string, string>
@@ -247,7 +255,7 @@ public class AuthController : ControllerBase
                 { "role", user.Role.ToString() },
                 { "username", user.Username }
             };
-            var uriBuilder = new UriBuilder(frontendUrl)
+            var uriBuilder = new UriBuilder(redirectUri)
             {
                 Query = await new FormUrlEncodedContent(queryParams).ReadAsStringAsync()
             };
@@ -280,8 +288,8 @@ public class AuthController : ControllerBase
         HandleToken(user, TokenType.RefreshToken);
 
         Console.WriteLine($"User {user.Username} authenticated via Google.");
-        var frontendUrl = _configuration["Frontend:OAuthRedirect"];
-        if (!string.IsNullOrEmpty(frontendUrl))
+        var redirectUri = GetOauthRedirectUri();
+        if (!string.IsNullOrEmpty(redirectUri))
         {
             //add role to query params
             var queryParams = new Dictionary<string, string>
@@ -289,7 +297,7 @@ public class AuthController : ControllerBase
                 { "role", user.Role.ToString() },
                 { "username", user.Username }
             };
-            var uriBuilder = new UriBuilder(frontendUrl)
+            var uriBuilder = new UriBuilder(redirectUri)
             {
                 Query = await new FormUrlEncodedContent(queryParams).ReadAsStringAsync()
             };
