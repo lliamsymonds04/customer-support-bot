@@ -5,9 +5,36 @@ using SupportBot.Data;
 using SupportBot.Services;
 using SupportBot.Hubs;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 var isLocal = builder.Environment.IsDevelopment();
+
+// Helper method to check database availability
+static bool IsDatabaseAvailable(string? connectionString, ILogger logger)
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        logger.LogWarning("Database connection string is null or empty");
+        return false;
+    }
+
+    try
+    {
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT 1";
+        command.ExecuteScalar();
+        logger.LogInformation("✅ Database connection successful - using PostgreSQL");
+        return true;
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "❌ Database connection failed - falling back to in-memory mode");
+        return false;
+    }
+}
 
 // Add services to the container.
 builder.Services.AddOpenApi();
@@ -45,19 +72,37 @@ builder.Services.AddStackExchangeRedisCache(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (connectionString != null && connectionString.Contains("{DatabasePassword}"))
 {
-    var databasePassword = builder.Configuration["DatabasePassword"] ?? throw new ArgumentNullException("DatabasePassword");
-    connectionString = connectionString.Replace("{DatabasePassword}", databasePassword);
-    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-}
-else if (connectionString == null)
-{
-    throw new ArgumentNullException("DefaultConnection");
+    var databasePassword = builder.Configuration["DatabasePassword"];
+    if (!string.IsNullOrEmpty(databasePassword))
+    {
+        connectionString = connectionString.Replace("{DatabasePassword}", databasePassword);
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+    }
 }
 
-// Add Db context
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// Check if database is available
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+var useDatabaseMode = IsDatabaseAvailable(connectionString, logger);
+
+if (useDatabaseMode)
+{
+    // Add Db context
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+    
+    logger.LogInformation("🗄️  Running in DATABASE mode");
+    
+    // Set the mode in HealthController
+    HealthController.SetDatabaseMode(false, true, connectionString?.Split(';').FirstOrDefault(s => s.Contains("Database"))?.Split('=').LastOrDefault());
+}
+else
+{
+    logger.LogWarning("💾 Running in IN-MEMORY mode - data will not be persisted!");
+    
+    // Set the mode in HealthController
+    HealthController.SetDatabaseMode(true, false, null);
+}
 
 builder.Services.AddHttpContextAccessor();
 
