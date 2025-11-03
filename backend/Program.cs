@@ -91,6 +91,10 @@ if (useDatabaseMode)
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
     
+    // Register database-backed services
+    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IFormsService, FormsService>();
+    
     logger.LogInformation("🗄️  Running in DATABASE mode");
     
     // Set the mode in HealthController
@@ -98,6 +102,13 @@ if (useDatabaseMode)
 }
 else
 {
+    // Register in-memory data store
+    builder.Services.AddSingleton<InMemoryDataStore>();
+    
+    // Register in-memory services
+    builder.Services.AddSingleton<IAuthService, InMemoryAuthService>();
+    builder.Services.AddSingleton<IFormsService, InMemoryFormsService>();
+    
     logger.LogWarning("💾 Running in IN-MEMORY mode - data will not be persisted!");
     
     // Set the mode in HealthController
@@ -111,9 +122,6 @@ builder.Services.AddScoped<LogFormSkill>();
 
 // Add session manager
 builder.Services.AddScoped<ISessionManager, RedisSessionManager>();
-
-// Add form service
-builder.Services.AddScoped<IFormsService, FormsService>();
 
 // Skills
 builder.Services.AddScoped<LogFormSkill>();
@@ -131,9 +139,6 @@ builder.Services.AddSingleton<GroqConfig>(sp =>
 
 // Add Semantic Kernel service
 builder.Services.AddScoped<ISemanticKernelService, SemanticKernelService>();
-
-// Add Auth Service
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
