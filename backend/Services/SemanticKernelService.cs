@@ -66,6 +66,7 @@ public class SemanticKernelService : ISemanticKernelService
             4. Assess urgency levels 
             5. Be friendly, professional, and helpful
             6. If the customer asks a question which is not relevant to your role, don't respond and tell them your role.
+            7. Don't mention the session ID in your responses. Don't change its value from the system value you are given.
             """;
 
         //join the relevant enums onto the instructions
