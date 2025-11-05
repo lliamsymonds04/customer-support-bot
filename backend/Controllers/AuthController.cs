@@ -22,31 +22,16 @@ public class AuthController : ControllerBase
     private readonly AppDbContext? _context;
     private static readonly PasswordHasher<string> _passwordHasher = new PasswordHasher<string>();
     private readonly IAuthService _authService;
-    private readonly InMemoryAuthService? _fallbackAuthService;
-    private readonly InMemoryDataStore? _fallbackDataStore;
+    private readonly InMemoryDataStore? _inMemoryDataStore;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, ILogger<AuthController> logger, AppDbContext? context = null, InMemoryDataStore? fallbackDataStore = null, IHttpContextAccessor? httpContextAccessor = null)
+    public AuthController(IConfiguration configuration, IAuthService authService, ILogger<AuthController> logger, AppDbContext? context = null, InMemoryDataStore? inMemoryDataStore = null)
     {
         _configuration = configuration;
         _context = context;
         _authService = authService;
         _logger = logger;
-        _fallbackDataStore = fallbackDataStore;
-        
-        // Always initialize fallback service if data store is available
-        if (_fallbackDataStore != null)
-        {
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var inMemoryLogger = loggerFactory.CreateLogger<InMemoryAuthService>();
-            
-            _fallbackAuthService = new InMemoryAuthService(
-                configuration, 
-                _fallbackDataStore, 
-                httpContextAccessor ?? new HttpContextAccessor { HttpContext = HttpContext },
-                inMemoryLogger
-            );
-        }
+        _inMemoryDataStore = inMemoryDataStore;
     }
 
     public class LoginRequest
@@ -61,20 +46,13 @@ public class AuthController : ControllerBase
     {
         User? user = null;
         
-        try
+        if (_context != null)
         {
-            if (_context != null)
-            {
-                user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            }
+            user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         }
-        catch (Exception ex)
+        else if (_inMemoryDataStore != null)
         {
-            _logger.LogWarning(ex, "Database login failed, falling back to in-memory auth service");
-            if (_fallbackDataStore != null)
-            {
-                user = _fallbackDataStore.GetUserByUsername(request.Username);
-            }
+            user = _inMemoryDataStore.GetUserByUsername(request.Username);
         }
         
         if (user == null)
@@ -94,16 +72,9 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid username or password.");
         }
 
-        try
+        if (_context != null)
         {
-            if (_context != null)
-            {
-                await _context.SaveChangesAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to save context after login");
+            await _context.SaveChangesAsync();
         }
 
         HandleToken(user, TokenType.AuthToken);
@@ -123,20 +94,13 @@ public class AuthController : ControllerBase
     {
         User? existingUser = null;
         
-        try
+        if (_context != null)
         {
-            if (_context != null)
-            {
-                existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            }
+            existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         }
-        catch (Exception ex)
+        else if (_inMemoryDataStore != null)
         {
-            _logger.LogWarning(ex, "Database signup check failed, falling back to in-memory auth service");
-            if (_fallbackDataStore != null)
-            {
-                existingUser = _fallbackDataStore.GetUserByUsername(request.Username);
-            }
+            existingUser = _inMemoryDataStore.GetUserByUsername(request.Username);
         }
 
         if (existingUser != null)
@@ -155,31 +119,19 @@ public class AuthController : ControllerBase
             Role = Roles.User
         };
 
-        try
+        if (_context != null)
         {
-            if (_context != null)
-            {
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-            }
-            else if (_fallbackDataStore != null)
-            {
-                newUser.Id = _fallbackDataStore.GetNextUserId();
-                _fallbackDataStore.AddUser(newUser);
-            }
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
         }
-        catch (Exception ex)
+        else if (_inMemoryDataStore != null)
         {
-            _logger.LogWarning(ex, "Database signup failed, falling back to in-memory auth service");
-            if (_fallbackDataStore != null)
-            {
-                newUser.Id = _fallbackDataStore.GetNextUserId();
-                _fallbackDataStore.AddUser(newUser);
-            }
-            else
-            {
-                return StatusCode(500, "Failed to create user.");
-            }
+            newUser.Id = _inMemoryDataStore.GetNextUserId();
+            _inMemoryDataStore.AddUser(newUser);
+        }
+        else
+        {
+            return StatusCode(500, "No storage available.");
         }
 
         var token = HandleToken(newUser, TokenType.AuthToken);
@@ -223,25 +175,10 @@ public class AuthController : ControllerBase
         var cookieName = _configuration["JwtSettings:AuthTokenName"] ?? "auth_token";
         if (Request.Cookies.TryGetValue(cookieName, out var token))
         {
-            try
+            var principal = _authService.ValidateJwtToken(token);
+            if (principal != null)
             {
-                var principal = _authService.ValidateJwtToken(token);
-                if (principal != null)
-                {
-                    return Ok("User is authenticated.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Main auth service validation failed, trying fallback");
-                if (_fallbackAuthService != null)
-                {
-                    var principal = _fallbackAuthService.ValidateJwtToken(token);
-                    if (principal != null)
-                    {
-                        return Ok("User is authenticated.");
-                    }
-                }
+                return Ok("User is authenticated.");
             }
         }
         return Unauthorized("User is not authenticated.");
@@ -254,16 +191,9 @@ public class AuthController : ControllerBase
         if (Request.Cookies.TryGetValue(cookieName, out var token))
         {
             Console.WriteLine("Validating refresh token...");
-            IAuthService activeAuthService = _authService;
-            
-            try
+            var principal = _authService.ValidateJwtToken(token);
+            if (principal != null)
             {
-                var principal = _authService.ValidateJwtToken(token);
-                if (principal == null)
-                {
-                    return Unauthorized("User is not authenticated.");
-                }
-                
                 Console.WriteLine("Refresh token is valid, generating new auth token...");
                 var userId = _authService.GetUserIdByJwt(token);
                 Console.WriteLine("User ID found:", userId);
@@ -272,6 +202,10 @@ public class AuthController : ControllerBase
                 if (_context != null)
                 {
                     user = _context.Users.Find(userId);
+                }
+                else if (_inMemoryDataStore != null)
+                {
+                    user = _inMemoryDataStore.GetUserById(userId);
                 }
                 
                 if (user != null)
@@ -283,34 +217,6 @@ public class AuthController : ControllerBase
                     });
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Main auth service refresh failed, trying fallback");
-                if (_fallbackAuthService != null && _fallbackDataStore != null)
-                {
-                    try
-                    {
-                        var principal = _fallbackAuthService.ValidateJwtToken(token);
-                        if (principal != null)
-                        {
-                            var userId = _fallbackAuthService.GetUserIdByJwt(token);
-                            var user = _fallbackDataStore.GetUserById(userId);
-                            if (user != null)
-                            {
-                                HandleToken(user, TokenType.AuthToken);
-                                return Ok(new
-                                {
-                                    role = user.Role,
-                                });
-                            }
-                        }
-                    }
-                    catch (Exception fallbackEx)
-                    {
-                        _logger.LogError(fallbackEx, "Fallback auth service also failed");
-                    }
-                }
-            }
         }
 
         return Unauthorized("User is not authenticated.");
@@ -319,48 +225,25 @@ public class AuthController : ControllerBase
     [HttpGet("role")]
     public IActionResult GetUserRole()
     {
-        try
+        var token = _authService.GetUserJwtToken();
+        var userId = _authService.GetUserIdByJwt(token);
+        
+        User? user = null;
+        if (_context != null)
         {
-            var token = _authService.GetUserJwtToken();
-            var userId = _authService.GetUserIdByJwt(token);
-            
-            User? user = null;
-            if (_context != null)
-            {
-                user = _context.Users.Find(userId);
-            }
-            
-            if (user != null)
-            {
-                return Ok(new
-                {
-                    role = user.Role,
-                });
-            }
+            user = _context.Users.Find(userId);
         }
-        catch (Exception ex)
+        else if (_inMemoryDataStore != null)
         {
-            _logger.LogWarning(ex, "Main auth service get role failed, trying fallback");
-            if (_fallbackAuthService != null && _fallbackDataStore != null)
+            user = _inMemoryDataStore.GetUserById(userId);
+        }
+        
+        if (user != null)
+        {
+            return Ok(new
             {
-                try
-                {
-                    var token = _fallbackAuthService.GetUserJwtToken();
-                    var userId = _fallbackAuthService.GetUserIdByJwt(token);
-                    var user = _fallbackDataStore.GetUserById(userId);
-                    if (user != null)
-                    {
-                        return Ok(new
-                        {
-                            role = user.Role,
-                        });
-                    }
-                }
-                catch (Exception fallbackEx)
-                {
-                    _logger.LogError(fallbackEx, "Fallback auth service also failed");
-                }
-            }
+                role = user.Role,
+            });
         }
 
         return Unauthorized("User is not authenticated.");
@@ -412,28 +295,7 @@ public class AuthController : ControllerBase
     [HttpGet("github/callback")]
     public async Task<IActionResult> GitHubCallback(string code)
     {
-        User? user = null;
-        
-        try
-        {
-            user = await _authService.ExchangeGitHubCode(code);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Main auth service GitHub exchange failed, trying fallback");
-            if (_fallbackAuthService != null)
-            {
-                try
-                {
-                    user = await _fallbackAuthService.ExchangeGitHubCode(code);
-                }
-                catch (Exception fallbackEx)
-                {
-                    _logger.LogError(fallbackEx, "Fallback auth service GitHub exchange also failed");
-                }
-            }
-        }
-        
+        var user = await _authService.ExchangeGitHubCode(code);
         if (user == null)
         {
             return Unauthorized();
@@ -475,28 +337,7 @@ public class AuthController : ControllerBase
     [HttpGet("google/callback")]
     public async Task<IActionResult> GoogleCallback(string code)
     {
-        User? user = null;
-        
-        try
-        {
-            user = await _authService.ExchangeGoogleCode(code);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Main auth service Google exchange failed, trying fallback");
-            if (_fallbackAuthService != null)
-            {
-                try
-                {
-                    user = await _fallbackAuthService.ExchangeGoogleCode(code);
-                }
-                catch (Exception fallbackEx)
-                {
-                    _logger.LogError(fallbackEx, "Fallback auth service Google exchange also failed");
-                }
-            }
-        }
-        
+        var user = await _authService.ExchangeGoogleCode(code);
         if (user == null)
         {
             return Unauthorized();
