@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
     private readonly InMemoryDataStore? _fallbackDataStore;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, ILogger<AuthController> logger, AppDbContext? context = null, InMemoryDataStore? fallbackDataStore = null)
+    public AuthController(IConfiguration configuration, IAuthService authService, ILogger<AuthController> logger, AppDbContext? context = null, InMemoryDataStore? fallbackDataStore = null, IHttpContextAccessor? httpContextAccessor = null)
     {
         _configuration = configuration;
         _context = context;
@@ -34,7 +34,8 @@ public class AuthController : ControllerBase
         _logger = logger;
         _fallbackDataStore = fallbackDataStore;
         
-        if (_fallbackDataStore != null && context == null)
+        // Always initialize fallback service if data store is available
+        if (_fallbackDataStore != null)
         {
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var inMemoryLogger = loggerFactory.CreateLogger<InMemoryAuthService>();
@@ -42,7 +43,7 @@ public class AuthController : ControllerBase
             _fallbackAuthService = new InMemoryAuthService(
                 configuration, 
                 _fallbackDataStore, 
-                new HttpContextAccessor { HttpContext = HttpContext },
+                httpContextAccessor ?? new HttpContextAccessor { HttpContext = HttpContext },
                 inMemoryLogger
             );
         }

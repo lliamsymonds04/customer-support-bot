@@ -80,9 +80,13 @@ if (connectionString != null && connectionString.Contains("{DatabasePassword}"))
     }
 }
 
-// Check if database is available
-var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-var useDatabaseMode = IsDatabaseAvailable(connectionString, logger);
+// Check if database is available - use console logging during startup
+using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
+    .SetMinimumLevel(LogLevel.Information)
+    .AddConsole());
+var startupLogger = loggerFactory.CreateLogger<Program>();
+
+var useDatabaseMode = IsDatabaseAvailable(connectionString, startupLogger);
 
 // Always register in-memory data store as a singleton for fallback purposes
 builder.Services.AddSingleton<InMemoryDataStore>();
@@ -98,7 +102,7 @@ if (useDatabaseMode)
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IFormsService, FormsService>();
     
-    logger.LogInformation("🗄️  Running in DATABASE mode with in-memory fallback");
+    startupLogger.LogInformation("🗄️  Running in DATABASE mode with in-memory fallback");
     
     // Set the mode in HealthController
     HealthController.SetDatabaseMode(false, true, connectionString?.Split(';').FirstOrDefault(s => s.Contains("Database"))?.Split('=').LastOrDefault());
@@ -109,7 +113,7 @@ else
     builder.Services.AddSingleton<IAuthService, InMemoryAuthService>();
     builder.Services.AddSingleton<IFormsService, InMemoryFormsService>();
     
-    logger.LogWarning("💾 Running in IN-MEMORY mode - data will not be persisted!");
+    startupLogger.LogWarning("💾 Running in IN-MEMORY mode - data will not be persisted!");
     
     // Set the mode in HealthController
     HealthController.SetDatabaseMode(true, false, null);
@@ -191,6 +195,10 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+// Logging
+// builder.Logging.ClearProviders();
+// builder.Logging.AddConsole();
+
 // Cors
 app.UseCors("AllowFrontEnd");
 
@@ -209,13 +217,5 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<FormsHub>("/hubs/forms");
 app.MapHub<AdminHub>("/hubs/admin");
-
-var endpointDataSource = app.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>();
-Console.WriteLine("📌 Registered endpoints:");
-foreach (var endpoint in endpointDataSource.Endpoints)
-{
-    Console.WriteLine(endpoint.DisplayName);
-}
-app.MapGet("/test", () => "working");
 
 app.Run();
