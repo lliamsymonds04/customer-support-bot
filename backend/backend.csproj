@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>linux-musl-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>7193f783-3409-4b19-b386-83b69b818de2</UserSecretsId>
-    <assemblyName>SupportBotBackend</assemblyName>
+    <AssemblyName>SupportBotBackend</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

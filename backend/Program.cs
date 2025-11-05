@@ -210,4 +210,12 @@ app.MapControllers();
 app.MapHub<FormsHub>("/hubs/forms");
 app.MapHub<AdminHub>("/hubs/admin");
 
+var endpointDataSource = app.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>();
+Console.WriteLine("📌 Registered endpoints:");
+foreach (var endpoint in endpointDataSource.Endpoints)
+{
+    Console.WriteLine(endpoint.DisplayName);
+}
+app.MapGet("/test", () => "working");
+
 app.Run();

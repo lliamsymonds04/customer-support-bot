@@ -1,0 +1,10 @@
+services:
+  support-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lliamsymonds04/support-bot:latest
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
