@@ -84,6 +84,9 @@ if (connectionString != null && connectionString.Contains("{DatabasePassword}"))
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 var useDatabaseMode = IsDatabaseAvailable(connectionString, logger);
 
+// Always register in-memory data store as a singleton for fallback purposes
+builder.Services.AddSingleton<InMemoryDataStore>();
+
 if (useDatabaseMode)
 {
     // Add Db context
@@ -95,16 +98,13 @@ if (useDatabaseMode)
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IFormsService, FormsService>();
     
-    logger.LogInformation("🗄️  Running in DATABASE mode");
+    logger.LogInformation("🗄️  Running in DATABASE mode with in-memory fallback");
     
     // Set the mode in HealthController
     HealthController.SetDatabaseMode(false, true, connectionString?.Split(';').FirstOrDefault(s => s.Contains("Database"))?.Split('=').LastOrDefault());
 }
 else
 {
-    // Register in-memory data store
-    builder.Services.AddSingleton<InMemoryDataStore>();
-    
     // Register in-memory services
     builder.Services.AddSingleton<IAuthService, InMemoryAuthService>();
     builder.Services.AddSingleton<IFormsService, InMemoryFormsService>();
