@@ -139,6 +139,8 @@ export function Signup() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                 disabled={isLoading}
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -169,6 +171,8 @@ export function Signup() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                 disabled={isLoading}
+                tabIndex={-1}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -189,11 +193,11 @@ export function Signup() {
             />
             <Label htmlFor="terms" className="text-sm text-gray-600">
               I agree to the{" "}
-              <Link to="/terms" className="text-blue-600 hover:text-blue-800">
+              <Link to="/terms" className="text-blue-600 hover:text-blue-800" tabIndex={-1}>
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="text-blue-600 hover:text-blue-800">
+              <Link to="/privacy" className="text-blue-600 hover:text-blue-800" tabIndex={-1}>
                 Privacy Policy
               </Link>
             </Label>
